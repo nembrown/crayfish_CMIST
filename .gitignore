@@ -2,9 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
-.shp
-.prj
-.shx
-.csv
-.dbf
-.nc
+*.shp
+*.prj
+*.shx
+*.csv
+*.dbf
+*.nc
