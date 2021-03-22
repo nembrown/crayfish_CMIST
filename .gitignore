@@ -8,3 +8,6 @@
 *.csv
 *.dbf
 *.nc
+*.sbn
+*.sbx
+*.cpg
