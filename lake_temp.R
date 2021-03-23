@@ -7,9 +7,9 @@ library(rgdal) # package for geospatial analysis
 library(ggplot2) # package for plotting
 library(maptools)
 # install.packages("remotes")
-# remotes::install_github("RS-eco/processNC")
+remotes::install_github("RS-eco/processNC")
 library("RS-eco/processNC")
-nc<-nc_open("20190715120000-C3S-L3S-LSWT-v4.0-fv01.0.nc")
+nc<-nc_open("C:Inputs/20190715120000-C3S-L3S-LSWT-v4.0-fv01.0.nc")
 
 print(nc)
 
@@ -43,7 +43,7 @@ plot(r)
 plot(r, xlim=c(-140,-50), ylim=c(40,70))
 
 #### feow
-feow_shp<-sf::st_read("feow_hydrosheds.shp")
+feow_shp<-sf::st_read("C:Inputs/feow_hydrosheds.shp")
 plot(feow_shp, add=T)
 
 lakes_rivs_shp<-sf::st_read("ghy_000c11a_e.shp")

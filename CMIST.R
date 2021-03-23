@@ -470,3 +470,85 @@ scores_combined_cumulative<-scores_combined %>% group_by(region) %>% summarise_i
 ggplot(scores_combined_cumulative, aes(y=CMIST_Score, x=region, colour=region)) + 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
   geom_point(size=4, position=position_dodge(width=0.5))
+
+###### Mapping
+library(ncdf4)
+library(reshape2)
+library(dplyr)
+library(ncdf4) # package for netcdf manipulation
+library(raster) # package for raster manipulation
+library(rgdal) # package for geospatial analysis
+library(ggplot2) # package for plotting
+library(maptools)
+
+
+library(here)
+library(sf)
+library(raster)
+library(spData)
+library(tmap)    # for static and interactive maps
+library(leaflet) # for interactive maps
+library(mapview) # for interactive maps
+library(ggplot2) # tidyverse vis package
+library(shiny)
+library(rgdal) # spatial/shp reading
+library(viridis) # nice color palette
+library(ggmap) # ggplot functionality for maps ---> dplyr, purr is dependency
+library(ggsn) # for scale bars/north arrows in ggplots
+library(maps)
+library(mapdata)
+
+#
+
+
+#### feow
+feow_shp<-sf::st_read("C:Inputs//feow_hydrosheds.shp")
+#https://www.r-graph-gallery.com/168-load-a-shape-file-into-r.html
+
+summary(feow_shp)
+class(feow_shp)
+
+feow_shp$long<-st_coordinates(feow_shp)[,1]
+
+feow_shp_crop <- feow_shp[feow_shp$FEOW_ID==c(101:120, 142), ]
+feow_shp_crop_2 <- feow_shp_crop[, -2]
+
+
+
+feow_shp_cmist<-merge(feow_shp_crop_2, scores_combined_cumulative, by.x=c("FEOW_ID"), by.y=c("region"))
+feow_shp_cmist$long<-st_coordinates(feow_shp_cmist)[,1] # get coordinates
+feow_shp_cmist$lat<-st_coordinates(feow_shp_cmist)[,2]
+
+
+
+bbox_marine <- make_bbox(df.SF_marine$long, df.SF_marine$lat, f = 0.01)
+bbox_marine_big <- make_bbox(df.SF_marine$long, df.SF_marine$lat, f = 5)
+map_toner_lite_marine <- get_stamenmap(bbox_marine, source="stamen", maptype= "toner-lite", crop=FALSE)
+map_marine <- get_stamenmap(bbox_marine, source="stamen", maptype= "terrain", crop=FALSE)
+map_marine_big <- get_stamenmap(bbox_marine_big, source="stamen", maptype= "terrain", crop=FALSE, zoom=8)
+
+
+ggmap(map_marine) + geom_point(data=df.SF_marine, aes(x = long, y = lat, col=site_type))+  scale_colour_viridis_d()
+
+
+
+
+feow_shp_cmist@data
+
+plot(feow_shp_cmist$FEOW_ID,col=feow_shp_cmist$CMIST_Score )
+
+library(rgdal)
+my_spdf <- readOGR( "C:Inputs//feow_hydrosheds.shp")
+summary(my_spdf)
+length(my_spdf)
+head(my_spdf@data)
+class(my_spdf)
+library(broom)
+spdf_fortified <- tidy(my_spdf, region = "FEOW_ID")
+
+# Plot it
+library(ggplot2)
+ggplot() +
+  geom_polygon(data = spdf_fortified, aes( x = long, y = lat, group = group), fill="#69b3a2", color="white") +
+  theme_void() 
+
