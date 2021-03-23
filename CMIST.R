@@ -426,3 +426,47 @@ simScore <- function(risk,certainty,n=1000){
 
 
 simScore(risk=2,certainty=1)
+
+####
+head(scores_combined)
+scores_combined_116<-scores_combined[scores_combined$region==116, ]
+head(scores_combined_116)
+
+ggplot(scores_combined_116, aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
+  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
+  geom_point(size=4)+ylim(0,3)+xlim(0,3)
+
+###### Main regions:
+scores_combined_ontario<-scores_combined[scores_combined$region==116:118, ]
+head(scores_combined_ontario)
+
+ggplot(scores_combined_ontario, aes(y=Likelihood_Score, x=Impact_Score, colour=species, shape=region)) + 
+  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
+  geom_point(size=4)+ylim(0,3)+xlim(0,3)
+
+
+##### BC
+scores_combined_103<-scores_combined[scores_combined$region==103, ]
+head(scores_combined_103)
+
+ggplot(scores_combined_103, aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
+  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
+  geom_point(size=4)+ylim(0,3)+xlim(0,3)
+
+#Okanagan
+scores_combined_120<-scores_combined[scores_combined$region==120, ]
+head(scores_combined_120)
+
+ggplot(scores_combined_120, aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
+  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
+  geom_point(size=4)+ylim(0,3)+xlim(0,3)
+
+
+
+#### CUmulative risk across regions
+library(tidyverse)
+scores_combined_cumulative<-scores_combined %>% group_by(region) %>% summarise_if(is.numeric, mean, na.rm=TRUE) 
+
+ggplot(scores_combined_cumulative, aes(y=CMIST_Score, x=region, colour=region)) + 
+  geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
+  geom_point(size=4, position=position_dodge(width=0.5))
