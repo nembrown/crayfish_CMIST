@@ -52,10 +52,10 @@ rownames(marble_risk_simple_1_3)<-NULL
 marble_risk_simple_1_3
 dim(marble_risk_simple_1_3)
 
-marble_uncertainties<-read.csv("C:Inputs//marble_uncertainty.csv")
+marble_uncertainties<-read.csv("C:Inputs//marble_certainty_321.csv")
 rownames(marble_uncertainties)<-marble_uncertainties$ID
 marble_uncertainties_simple<-marble_uncertainties[,-c(1:3)]
-marble_uncertainties_simple_1_3<-marble_uncertainties_simple+1
+marble_uncertainties_simple_1_3<-marble_uncertainties_simple
 colnames(marble_uncertainties_simple_1_3)<-NULL
 rownames(marble_uncertainties_simple_1_3)<-NULL
 marble_uncertainties_simple_1_3
@@ -94,10 +94,10 @@ rownames(redswamp_risk_simple_1_3)<-NULL
 redswamp_risk_simple_1_3
 dim(redswamp_risk_simple_1_3)
 
-redswamp_uncertainties<-read.csv("C:Inputs//redswamp_uncertainty.csv")
+redswamp_uncertainties<-read.csv("C:Inputs//redswamp_certainty_321.csv")
 rownames(redswamp_uncertainties)<-redswamp_uncertainties$ID
 redswamp_uncertainties_simple<-redswamp_uncertainties[,-c(1:3)]
-redswamp_uncertainties_simple_1_3<-redswamp_uncertainties_simple+1
+redswamp_uncertainties_simple_1_3<-redswamp_uncertainties_simple
 colnames(redswamp_uncertainties_simple_1_3)<-NULL
 rownames(redswamp_uncertainties_simple_1_3)<-NULL
 redswamp_uncertainties_simple_1_3
@@ -148,3 +148,13 @@ ggplot(scores_combined, aes(y=Likelihood_Score, x=region, colour=species)) +
 ggplot(scores_combined, aes(y=Impact_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=Impact_Lower, ymax=Impact_Upper), width=.1, position=position_dodge(width=0.5)) +
   geom_point(size=4, position=position_dodge(width=0.5))
+
+
+#' scores <- simScore(risk=2,certainty=1)
+simScore <- function(risk,certainty,n=1000){
+  p <- probs[probs$Risk==risk&probs$Certainty==certainty,]
+  sample(x=p$Score, size=n, prob=p$Probability,replace=TRUE)
+}
+
+
+simScore(risk=2,certainty=1)
