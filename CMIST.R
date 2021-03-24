@@ -463,7 +463,7 @@ ggplot(scores_combined_120, aes(y=Likelihood_Score, x=Impact_Score, colour=speci
 
 
 
-#### CUmulative risk across regions
+#### Mean risk across regions: can't do cumulative since some regions don't 
 library(tidyverse)
 scores_combined_cumulative<-scores_combined %>% group_by(region) %>% summarise_if(is.numeric, mean, na.rm=TRUE) 
 
@@ -497,45 +497,80 @@ library(ggmap) # ggplot functionality for maps ---> dplyr, purr is dependency
 library(ggsn) # for scale bars/north arrows in ggplots
 library(maps)
 library(mapdata)
+library(sp)
+library(rgeos)
 
-#
+# once way to import the shape file
+#feow_shp<-sf::st_read("C:Inputs//feow_hydrosheds.shp")
 
-
-#### feow
-feow_shp<-sf::st_read("C:Inputs//feow_hydrosheds.shp")
+#Some resources:
 #https://www.r-graph-gallery.com/168-load-a-shape-file-into-r.html
+#https://www.worldfullofdata.com/r-tutorial-plot-maps-shapefiles/
 
-summary(feow_shp)
+#Maptools
+
+#### import as sp object
+feow_shp<-readShapeSpatial("C:Inputs//feow_hydrosheds.shp")
+feow_shp@data
 class(feow_shp)
+plot(shape)
 
-feow_shp$long<-st_coordinates(feow_shp)[,1]
 
 feow_shp_crop <- feow_shp[feow_shp$FEOW_ID==c(101:120, 142), ]
 feow_shp_crop_2 <- feow_shp_crop[, -2]
 
+plot(feow_shp_crop_2)
+
+feow_shp_crop_2@data<-merge(feow_shp_crop_2@data, scores_combined_cumulative[,1:2], by.x=c("FEOW_ID"), by.y=c("region"))
+
+cmist_data <- feow_shp_crop_2@data$CMIST_Score
+
+colors <- (cmist_data - min(cmist_data)) / (max(cmist_data) - min(cmist_data))*254+1
+feow_shp_crop_2@data$color =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
+plot(feow_shp_crop_2, col = feow_shp_crop_2@data$color, border=NA)
+
+#how do I bound the box and make it fit only the cropped boundaries? 
 
 
-feow_shp_cmist<-merge(feow_shp_crop_2, scores_combined_cumulative, by.x=c("FEOW_ID"), by.y=c("region"))
-feow_shp_cmist$long<-st_coordinates(feow_shp_cmist)[,1] # get coordinates
-feow_shp_cmist$lat<-st_coordinates(feow_shp_cmist)[,2]
+####Trying it in ggplot2
+
+
+#########
+feow_shp_crop_2 <- gBuffer(feow_shp_crop_2, byid=TRUE, width=0)
+
+# Plot map and legend with colors
+feow_shp_crop_2@data <- feow_shp_crop_2@data[order(feow_shp_crop_2@data$FEOW_ID),] 
+feow_shp_crop_2_data <- fortify(feow_shp_crop_2, region = "FEOW_ID")
+feow_shp_crop_2_data <- merge(feow_shp_crop_2_data, feow_shp_crop_2@data[, c('FEOW_ID', 'CMIST_Score')], by.x='id', by.y='FEOW_ID', all.x=TRUE)
+
+ggplot(feow_shp_crop_2_data, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(aes(fill = CMIST_Score)) +
+  geom_path(color = "black") + 
+  scale_fill_gradient(low = '#9eceff', high = '#004081', name = "CMIST_Score")+
+  xlim(-170, -50)
 
 
 
-bbox_marine <- make_bbox(df.SF_marine$long, df.SF_marine$lat, f = 0.01)
-bbox_marine_big <- make_bbox(df.SF_marine$long, df.SF_marine$lat, f = 5)
-map_toner_lite_marine <- get_stamenmap(bbox_marine, source="stamen", maptype= "toner-lite", crop=FALSE)
-map_marine <- get_stamenmap(bbox_marine, source="stamen", maptype= "terrain", crop=FALSE)
-map_marine_big <- get_stamenmap(bbox_marine_big, source="stamen", maptype= "terrain", crop=FALSE, zoom=8)
 
-
-ggmap(map_marine) + geom_point(data=df.SF_marine, aes(x = long, y = lat, col=site_type))+  scale_colour_viridis_d()
+ggplot_southafrica <- ggplot_southafrica +
+ 
+ggplot_southafrica
 
 
 
 
-feow_shp_cmist@data
 
-plot(feow_shp_cmist$FEOW_ID,col=feow_shp_cmist$CMIST_Score )
+
+
+
+
+
+
+
+
+
+
+
 
 library(rgdal)
 my_spdf <- readOGR( "C:Inputs//feow_hydrosheds.shp")
