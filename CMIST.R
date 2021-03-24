@@ -545,27 +545,13 @@ feow_shp_crop_2_data <- merge(feow_shp_crop_2_data, feow_shp_crop_2@data[, c('FE
 
 ggplot(feow_shp_crop_2_data, aes(x = long, y = lat, group = group)) + 
   geom_polygon(aes(fill = CMIST_Score)) +
-  geom_path(color = "black") + 
+  geom_path(colour = "black") + 
+  borders(database="world", regions="canada", colour="black")+
   scale_fill_gradient(low = '#9eceff', high = '#004081', name = "CMIST_Score")+
-  xlim(-170, -50)
+  xlim(-170, -50) + ylim(40, 85)
 
 
-
-
-ggplot_southafrica <- ggplot_southafrica +
- 
-ggplot_southafrica
-
-
-
-
-
-
-
-
-
-
-
+help(package='maps')
 
 
 
