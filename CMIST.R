@@ -1,4 +1,4 @@
-devtools::install_github("https://github.com/remi-daigle/CMISTR")
+# devtools::install_github("https://github.com/remi-daigle/CMISTR")
 library(CMISTR)
 set.seed(11)
 risks <- sample(x = c(1:3),size = 17,replace = TRUE)
@@ -418,14 +418,14 @@ ggplot(scores_combined, aes(y=Impact_Score, x=region, colour=species)) +
   geom_point(size=4, position=position_dodge(width=0.5))
 
 
-#' scores <- simScore(risk=2,certainty=1)
-simScore <- function(risk,certainty,n=1000){
-  p <- probs[probs$Risk==risk&probs$Certainty==certainty,]
-  sample(x=p$Score, size=n, prob=p$Probability,replace=TRUE)
-}
+#' #' scores <- simScore(risk=2,certainty=1)
+#' simScore <- function(risk,certainty,n=1000){
+#'   p <- probs[probs$Risk==risk&probs$Certainty==certainty,]
+#'   sample(x=p$Score, size=n, prob=p$Probability,replace=TRUE)
+#' }
 
 
-simScore(risk=2,certainty=1)
+# simScore(risk=2,certainty=1)
 
 ####
 head(scores_combined)
@@ -503,119 +503,91 @@ library(sp)
 library(rgeos)
 
 # once way to import the shape file
-#feow_shp<-sf::st_read("C:Inputs//feow_hydrosheds.shp")
-
-#Some resources:
-#https://www.r-graph-gallery.com/168-load-a-shape-file-into-r.html
-#https://www.worldfullofdata.com/r-tutorial-plot-maps-shapefiles/
-
-#Maptools
-
-#### import as sp object
-feow_shp<-readShapeSpatial("C:Inputs//feow_hydrosheds.shp")
-feow_shp@data
-class(feow_shp)
+feow_sf<-sf::st_read("C:Inputs//feow_hydrosheds.shp")
+feow_sf_crop<- feow_sf[feow_sf$FEOW_ID==c(101:120, 142), ]
+feow_sf_crop_2 <- feow_sf_crop[, -2]
 
 
-feow_shp_crop <- feow_shp[feow_shp$FEOW_ID==c(101:120, 142), ]
-feow_shp_crop_2 <- feow_shp_crop[, -2]
+#plot sf with colours as id
+ggplot(feow_sf_crop_2) +
+  geom_sf(aes(fill = as.factor(FEOW_ID)))
 
-plot(feow_shp_crop_2)
 
-feow_shp_crop_2@data<-merge(feow_shp_crop_2@data, scores_combined_cumulative[,1:2], by.x=c("FEOW_ID"), by.y=c("region"))
-cmist_data <- feow_shp_crop_2@data$CMIST_Score
+feow_sf_crop_2<-merge(feow_shp_crop_2, scores_combined[,c("species", "region", "CMIST_Score")], by.x=c("FEOW_ID"), by.y=c("region"))
+cmist_data <- feow_sf_crop_2$CMIST_Score
 colors <- (cmist_data - min(cmist_data)) / (max(cmist_data) - min(cmist_data))*254+1
-feow_shp_crop_2@data$color =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
-plot(feow_shp_crop_2, col = feow_shp_crop_2@data$color, border=NA)
+feow_sf_crop_2$colour =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
 
-####Trying it in ggplot2
-
-#  scale_fill_gradient(low = '#9eceff', high = '#004081', name = "CMIST_Score")+
-#  scale_fill_continuous_sequential(name = "CMIST_Score", palette="Reds")+
+palette_blue =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
 
 
-library(colorspace)
+library(RColorBrewer)
 
-#########
-feow_shp_crop_2 <- gBuffer(feow_shp_crop_2, byid=TRUE, width=0)
-
-# Plot map and legend with colors
-feow_shp_crop_2_data <- fortify(feow_shp_crop_2, region = "FEOW_ID")
-feow_shp_crop_2_data <- merge(feow_shp_crop_2_data, feow_shp_crop_2@data[, c('FEOW_ID', 'CMIST_Score')], by.x='id', by.y='FEOW_ID', all.x=TRUE)
-
-ggplot(feow_shp_crop_2_data, aes(x = long, y = lat, group = group)) + 
-  geom_polygon(aes(fill = CMIST_Score)) +
-  geom_path(colour = "black") + 
-  scale_fill_viridis(name="CMIST_Score")+
-  borders(database="world", regions="canada", colour="black", linetype="dashed")+
-  xlim(-170, -50) + ylim(40, 85)
+myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
+sc <- scale_fill_gradientn(colours = myPalette(100), limits=c(min(feow_sf_crop_2$CMIST_Score), max(feow_sf_crop_2$CMIST_Score)))
 
 
 
-##### Now for each species and all the regions
-feow_shp_marble<-feow_shp_crop_2
-feow_shp_redswamp<-feow_shp_crop_2
-feow_shp_whiteriver<-feow_shp_crop_2
-feow_shp_rusty<-feow_shp_crop_2
-feow_shp_spinycheek<-feow_shp_crop_2
-feow_shp_virile<-feow_shp_crop_2
-feow_shp_signal<-feow_shp_crop_2
-feow_shp_allegheny<-feow_shp_crop_2
-
-##Marble
-scores_combined_marble<-scores_combined %>% filter(species=="marble")
-
-feow_shp_marble@data<-merge(feow_shp_marble@data, scores_combined_marble[,c("species", "region")], by.x=c("FEOW_ID"), by.y=c("region"))
-feow_shp_marble <- gBuffer(feow_shp_marble, byid=TRUE, width=0)
-feow_shp_marble_data <- fortify(feow_shp_marble, region = "FEOW_ID")
-feow_shp_marble_data <- merge(feow_shp_marble_data, feow_shp_marble@data[, c('FEOW_ID', 'CMIST_Score')], by.x='id', by.y='FEOW_ID', all.x=TRUE)
-
-marble_score_plot<- ggplot(feow_shp_marble_data, aes(x = long, y = lat, group = group)) + 
-                    geom_polygon(aes(fill = CMIST_Score)) +
-                    geom_path(colour = "black") + 
-                    borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                    xlim(-170, -50) + ylim(40, 85) + 
-                    ggtitle("marble") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=20))
-           
-marble_score_plot 
-
-##redswamp
-scores_combined_redswamp<-scores_combined %>% filter(species=="redswamp")
-
-feow_shp_redswamp@data<-merge(feow_shp_redswamp@data, scores_combined_redswamp[,c("species", "region")], by.x=c("FEOW_ID"), by.y=c("region"))
-feow_shp_redswamp <- gBuffer(feow_shp_redswamp, byid=TRUE, width=0)
-feow_shp_redswamp_data <- fortify(feow_shp_redswamp, region = "FEOW_ID")
-feow_shp_redswamp_data <- merge(feow_shp_redswamp_data, feow_shp_redswamp@data[, c('FEOW_ID', 'CMIST_Score')], by.x='id', by.y='FEOW_ID', all.x=TRUE)
-
-redswamp_score_plot<- ggplot(feow_shp_redswamp_data, aes(x = long, y = lat, group = group)) + 
-  geom_polygon(aes(fill = CMIST_Score)) +
-  geom_path(colour = "black") + 
-  borders(database="world", regions="canada", colour="black", linetype="dashed")+
-  xlim(-170, -50) + ylim(40, 85) + 
-  ggtitle("redswamp") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=20))
-
-library(patchwork)
+marble_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="marble")) +
+                   geom_sf(aes(fill=CMIST_Score))+ sc + 
+                   borders(database="world", regions="canada", colour="black", linetype="dashed")+
+                   xlim(-170, -50) + ylim(40, 85)  +
+                   ggtitle("marble") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
+      
 
 
-marble_score_plot + redswamp_score_plot  + scale_fill_viridis(name="CMIST_Score") + plot_layout(ncol = 2) 
+redswamp_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="redswamp")) +
+                     geom_sf(aes(fill = CMIST_Score))+ sc+
+                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
+                     xlim(-170, -50) + ylim(40, 85)  +
+                     ggtitle("redswamp") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
 
-##whiteriver
-scores_combined_whiteriver<-scores_combined %>% filter(species=="whiteriver")
+whiteriver_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="whiteriver")) +
+                     geom_sf(aes(fill = CMIST_Score))+ sc+
+                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
+                     xlim(-170, -50) + ylim(40, 85)  +
+                     ggtitle("whiteriver") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
 
-feow_shp_whiteriver@data<-merge(feow_shp_whiteriver@data, scores_combined_whiteriver[,c("species", "region")], by.x=c("FEOW_ID"), by.y=c("region"))
-feow_shp_whiteriver <- gBuffer(feow_shp_whiteriver, byid=TRUE, width=0)
-feow_shp_whiteriver_data <- fortify(feow_shp_whiteriver, region = "FEOW_ID")
-feow_shp_whiteriver_data <- merge(feow_shp_whiteriver_data, feow_shp_whiteriver@data[, c('FEOW_ID', 'CMIST_Score')], by.x='id', by.y='FEOW_ID', all.x=TRUE)
 
-whiteriver_score_plot<- ggplot(feow_shp_whiteriver_data, aes(x = long, y = lat, group = group)) + 
-  geom_polygon(aes(fill = CMIST_Score)) +
-  geom_path(colour = "black") + 
-  scale_fill_viridis(name="CMIST_Score")+
-  borders(database="world", regions="canada", colour="black", linetype="dashed")+
-  xlim(-170, -50) + ylim(40, 85) + 
-  ggtitle("whiteriver") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=20))
+rusty_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="rusty")) +
+                     geom_sf(aes(fill = CMIST_Score))+ sc+
+                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
+                     xlim(-170, -50) + ylim(40, 85)  +
+                     ggtitle("rusty") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
+                     
 
-whiteriver_score_plot 
+spinycheek_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="spinycheek")) +
+                     geom_sf(aes(fill = CMIST_Score))+ sc+
+                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
+                     xlim(-170, -50) + ylim(40, 85)  +
+                     ggtitle("spinycheek") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
+                     
+
+virile_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="virile")) +
+                     geom_sf(aes(fill = CMIST_Score))+ sc+
+                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
+                     xlim(-170, -50) + ylim(40, 85)  +
+                     ggtitle("virile") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
+                    
+
+signal_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="signal")) +
+                     geom_sf(aes(fill = CMIST_Score))+ sc+
+                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
+                     xlim(-170, -50) + ylim(40, 85)  +
+                     ggtitle("signal") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
+                  
+
+allegheny_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="allegheny")) +
+                     geom_sf(aes(fill = CMIST_Score))+ sc+
+                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
+                     xlim(-170, -50) + ylim(40, 85)  +
+                     ggtitle("allegheny") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16))
+                     
 
 
 
+
+allspp_plot <-  marble_score_plot + redswamp_score_plot + whiteriver_score_plot + rusty_score_plot + 
+                spinycheek_score_plot + virile_score_plot + signal_score_plot + allegheny_score_plot   + plot_layout(ncol = 4) 
+
+allspp_plot
