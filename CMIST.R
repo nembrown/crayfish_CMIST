@@ -33,7 +33,6 @@ for (r in 1:nrow(mat_risks))
 colnames(score)
 
 library(ggplot2)
-theme_set(theme_bw())
 
 ggplot(score, aes(y=CMIST_Score, x=rownames(score))) + 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1) +
@@ -527,67 +526,34 @@ myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 sc <- scale_fill_gradientn(colours = myPalette(100), limits=c(min(feow_sf_crop_2$CMIST_Score), max(feow_sf_crop_2$CMIST_Score)))
 
 
+###### For loop for plotting
+theme_set( 
+theme(axis.line=element_blank(),axis.text.x=element_blank(),
+      axis.text.y=element_blank(),axis.ticks=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),legend.position="none",
+      panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),plot.background=element_blank()))
 
-marble_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="marble")) +
-                   geom_sf(aes(fill=CMIST_Score))+ sc + 
-                   borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                   xlim(-170, -50) + ylim(40, 85)  +
-                   ggtitle("marble") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
-      
+species = unique(feow_sf_crop_2$species)
+species_plots = list()
 
-
-redswamp_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="redswamp")) +
-                     geom_sf(aes(fill = CMIST_Score))+ sc+
-                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                     xlim(-170, -50) + ylim(40, 85)  +
-                     ggtitle("redswamp") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
-
-whiteriver_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="whiteriver")) +
-                     geom_sf(aes(fill = CMIST_Score))+ sc+
-                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                     xlim(-170, -50) + ylim(40, 85)  +
-                     ggtitle("whiteriver") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
-
-
-rusty_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="rusty")) +
-                     geom_sf(aes(fill = CMIST_Score))+ sc+
-                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                     xlim(-170, -50) + ylim(40, 85)  +
-                     ggtitle("rusty") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
-                     
-
-spinycheek_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="spinycheek")) +
-                     geom_sf(aes(fill = CMIST_Score))+ sc+
-                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                     xlim(-170, -50) + ylim(40, 85)  +
-                     ggtitle("spinycheek") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
-                     
-
-virile_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="virile")) +
-                     geom_sf(aes(fill = CMIST_Score))+ sc+
-                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                     xlim(-170, -50) + ylim(40, 85)  +
-                     ggtitle("virile") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
-                    
-
-signal_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="signal")) +
-                     geom_sf(aes(fill = CMIST_Score))+ sc+
-                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                     xlim(-170, -50) + ylim(40, 85)  +
-                     ggtitle("signal") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16)) + theme(legend.position="none")
-                  
-
-allegheny_score_plot<-ggplot(feow_sf_crop_2 %>% filter(species=="allegheny")) +
-                     geom_sf(aes(fill = CMIST_Score))+ sc+
-                     borders(database="world", regions="canada", colour="black", linetype="dashed")+
-                     xlim(-170, -50) + ylim(40, 85)  +
-                     ggtitle("allegheny") + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16))
-                     
+for(species_ in species) {
+  species_plots[[species_]] = ggplot(feow_sf_crop_2 %>% filter(species == species_)) + 
+    geom_sf(aes(fill = CMIST_Score))+ sc+
+    borders(database="world", regions="canada", colour="black", linetype="dashed")+
+    xlim(-170, -50) + ylim(40, 85)  +
+    ggtitle(paste0(species_)) 
+  print(species_plots[[species_]])
+  ggsave(species_plots[[species_]], file=paste0("plot_", species_,".png"), dpi=300)
+}
 
 
+# + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16))
+
+species_plots[["marble"]]
 
 
-allspp_plot <-  marble_score_plot + redswamp_score_plot + whiteriver_score_plot + rusty_score_plot + 
-                spinycheek_score_plot + virile_score_plot + signal_score_plot + allegheny_score_plot   + plot_layout(ncol = 4) 
+allspp_plot <-  wrap_plots( species_plots, ncol = 2) + plot_layout(guides = 'collect') 
 
 allspp_plot
