@@ -46,7 +46,7 @@ plot(r, xlim=c(-140,-50), ylim=c(40,70))
 feow_shp<-sf::st_read("C:Inputs/feow_hydrosheds.shp")
 plot(feow_shp, add=T)
 
-lakes_rivs_shp<-sf::st_read("ghy_000c11a_e.shp")
+lakes_rivs_shp<-sf::st_read("C:Inputs/ghy_000c11a_e.shp")
 plot(lakes_rivs_shp)
 
 

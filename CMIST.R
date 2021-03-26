@@ -443,24 +443,27 @@ ggplot(scores_combined_ontario, aes(y=Likelihood_Score, x=Impact_Score, colour=s
   geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
   geom_point(size=4)+ylim(0,3)+xlim(0,3)
 
+theme_set(theme_bw())
+#########
+regions = unique(scores_combined$region)
+region_plots = list()
 
-##### BC
-scores_combined_103<-scores_combined[scores_combined$region==103, ]
-head(scores_combined_103)
+for(region_ in regions) {
+  
+  region_plots[[region_]] = ggplot(scores_combined %>% filter(region == region_), aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
+    geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), width=.5) +
+    geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper)) +
+    geom_point(size=4)+ylim(0,3)+xlim(0,3)+
+    ggtitle(paste0(region_)) +
+    scale_colour_discrete(drop=FALSE, limits=species)+
+    geom_rect(data=NULL,aes(xmin=2,xmax=Inf,ymin=2,ymax=Inf), colour="red", fill = NA)
+  print(region_plots[[region_]])
+  ggsave(region_plots[[region_]], file=paste0("plot_", region_,".png"), dpi=300)
+}
 
-ggplot(scores_combined_103, aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
-  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
-  geom_point(size=4)+ylim(0,3)+xlim(0,3)
+region_plots[["116"]]
 
-#Okanagan
-scores_combined_120<-scores_combined[scores_combined$region==120, ]
-head(scores_combined_120)
-
-ggplot(scores_combined_120, aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
-  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
-  geom_point(size=4)+ylim(0,3)+xlim(0,3)
-
-
+ 
 
 #### Mean risk across regions: can't do cumulative since some regions don't 
 library(tidyverse)
@@ -526,15 +529,18 @@ myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 sc <- scale_fill_gradientn(colours = myPalette(100), limits=c(min(feow_sf_crop_2$CMIST_Score), max(feow_sf_crop_2$CMIST_Score)))
 
 
-###### For loop for plotting
+###### For loops for plotting
+#theme for maps:
 theme_set( 
 theme(axis.line=element_blank(),axis.text.x=element_blank(),
       axis.text.y=element_blank(),axis.ticks=element_blank(),
       axis.title.x=element_blank(),
-      axis.title.y=element_blank(),legend.position="none",
+      axis.title.y=element_blank(),
       panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
       panel.grid.minor=element_blank(),plot.background=element_blank()))
 
+
+#map coloured by CMIST_Score in each region 
 species = unique(feow_sf_crop_2$species)
 species_plots = list()
 
@@ -555,5 +561,5 @@ species_plots[["marble"]]
 
 
 allspp_plot <-  wrap_plots( species_plots, ncol = 2) + plot_layout(guides = 'collect') 
-
 allspp_plot
+ggsave(allspp_plot, file="allsppp_plot.png", dpi=300)
