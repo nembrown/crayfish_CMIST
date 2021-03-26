@@ -547,8 +547,8 @@ for(region_ in regions) {
     ggtitle(paste0(region_)) +
     scale_colour_discrete(drop=FALSE, limits=species)+
     geom_rect(data=NULL,aes(xmin=2,xmax=Inf,ymin=2,ymax=Inf), colour="red", fill = NA)
-  print(region_plots[[region_]])
-  ggsave(region_plots[[region_]], file=paste0("plot_", region_,".png"), dpi=300)
+  # print(region_plots[[region_]])
+  # ggsave(region_plots[[region_]], file=paste0("plot_", region_,".png"), dpi=300)
 }
 
 region_plots[["116"]]
