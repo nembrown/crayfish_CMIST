@@ -426,44 +426,6 @@ ggplot(scores_combined, aes(y=Impact_Score, x=region, colour=species)) +
 
 # simScore(risk=2,certainty=1)
 
-####
-head(scores_combined)
-scores_combined_116<-scores_combined[scores_combined$region==116, ]
-head(scores_combined_116)
-
-ggplot(scores_combined_116, aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
-  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
-  geom_point(size=4)+ylim(0,3)+xlim(0,3)
-
-###### Main regions:
-scores_combined_ontario<-scores_combined[scores_combined$region==116:118, ]
-head(scores_combined_ontario)
-
-ggplot(scores_combined_ontario, aes(y=Likelihood_Score, x=Impact_Score, colour=species, shape=region)) + 
-  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper,xmin=Impact_Lower, xmax=Impact_Upper ), width=.1) +
-  geom_point(size=4)+ylim(0,3)+xlim(0,3)
-
-theme_set(theme_bw())
-#########
-regions = unique(scores_combined$region)
-region_plots = list()
-
-for(region_ in regions) {
-  
-  region_plots[[region_]] = ggplot(scores_combined %>% filter(region == region_), aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
-    geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), width=.5) +
-    geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper)) +
-    geom_point(size=4)+ylim(0,3)+xlim(0,3)+
-    ggtitle(paste0(region_)) +
-    scale_colour_discrete(drop=FALSE, limits=species)+
-    geom_rect(data=NULL,aes(xmin=2,xmax=Inf,ymin=2,ymax=Inf), colour="red", fill = NA)
-  print(region_plots[[region_]])
-  ggsave(region_plots[[region_]], file=paste0("plot_", region_,".png"), dpi=300)
-}
-
-region_plots[["116"]]
-
- 
 
 #### Mean risk across regions: can't do cumulative since some regions don't 
 library(tidyverse)
@@ -475,6 +437,8 @@ ggplot(scores_combined_cumulative, aes(y=CMIST_Score, x=region, colour=region)) 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
   geom_point(size=4, position=position_dodge(width=0.5))
 
+
+# Maps --------------------------------------------------------------------
 ###### Mapping
 library(ncdf4)
 library(reshape2)
@@ -484,6 +448,7 @@ library(raster) # package for raster manipulation
 library(rgdal) # package for geospatial analysis
 library(ggplot2) # package for plotting
 library(maptools)
+
 
 
 library(here)
@@ -516,11 +481,11 @@ ggplot(feow_sf_crop_2) +
 
 
 feow_sf_crop_2<-merge(feow_shp_crop_2, scores_combined[,c("species", "region", "CMIST_Score")], by.x=c("FEOW_ID"), by.y=c("region"))
-cmist_data <- feow_sf_crop_2$CMIST_Score
-colors <- (cmist_data - min(cmist_data)) / (max(cmist_data) - min(cmist_data))*254+1
-feow_sf_crop_2$colour =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
-
-palette_blue =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
+# cmist_data <- feow_sf_crop_2$CMIST_Score
+# colors <- (cmist_data - min(cmist_data)) / (max(cmist_data) - min(cmist_data))*254+1
+# feow_sf_crop_2$colour =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
+# 
+# palette_blue =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
 
 
 library(RColorBrewer)
@@ -530,15 +495,6 @@ sc <- scale_fill_gradientn(colours = myPalette(100), limits=c(min(feow_sf_crop_2
 
 
 ###### For loops for plotting
-#theme for maps:
-theme_set( 
-theme(axis.line=element_blank(),axis.text.x=element_blank(),
-      axis.text.y=element_blank(),axis.ticks=element_blank(),
-      axis.title.x=element_blank(),
-      axis.title.y=element_blank(),
-      panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-      panel.grid.minor=element_blank(),plot.background=element_blank()))
-
 
 #map coloured by CMIST_Score in each region 
 species = unique(feow_sf_crop_2$species)
@@ -549,7 +505,13 @@ for(species_ in species) {
     geom_sf(aes(fill = CMIST_Score))+ sc+
     borders(database="world", regions="canada", colour="black", linetype="dashed")+
     xlim(-170, -50) + ylim(40, 85)  +
-    ggtitle(paste0(species_)) 
+    ggtitle(paste0(species_)) + 
+    theme(axis.line=element_blank(),axis.text.x=element_blank(),
+                                      axis.text.y=element_blank(),axis.ticks=element_blank(),
+                                      axis.title.x=element_blank(),
+                                      axis.title.y=element_blank(),
+                                      panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+                                      panel.grid.minor=element_blank(),plot.background=element_blank())
   print(species_plots[[species_]])
   ggsave(species_plots[[species_]], file=paste0("plot_", species_,".png"), dpi=300)
 }
@@ -563,3 +525,70 @@ species_plots[["marble"]]
 allspp_plot <-  wrap_plots( species_plots, ncol = 2) + plot_layout(guides = 'collect') 
 allspp_plot
 ggsave(allspp_plot, file="allsppp_plot.png", dpi=300)
+
+
+
+
+
+# biplots -----------------------------------------------------------------
+
+
+
+theme_set(theme_bw())
+regions = unique(scores_combined$region)
+region_plots = list()
+
+for(region_ in regions) {
+  
+  region_plots[[region_]] = ggplot(scores_combined %>% filter(region == region_), aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
+    geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), width=.5) +
+    geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper)) +
+    geom_point(size=4)+ylim(0,3)+xlim(0,3)+
+    ggtitle(paste0(region_)) +
+    scale_colour_discrete(drop=FALSE, limits=species)+
+    geom_rect(data=NULL,aes(xmin=2,xmax=Inf,ymin=2,ymax=Inf), colour="red", fill = NA)
+  print(region_plots[[region_]])
+  ggsave(region_plots[[region_]], file=paste0("plot_", region_,".png"), dpi=300)
+}
+
+region_plots[["116"]]
+
+
+allregions_plot <-  wrap_plots( region_plots, ncol = 7) + plot_layout(guides = 'collect') 
+allregions_plot
+ggsave(allregions_plot, file="allregions_plot.png", dpi=300)
+
+##### identification map of which region 
+
+
+region_id_plots = list()
+feow_sf_regions=list()
+
+for(region_ in regions) {
+  feow_sf_regions[[region_]]<-feow_sf_crop_2 %>% filter(FEOW_ID==region_)
+  region_id_plots[[region_]] = ggplot(feow_sf_crop_2) + geom_sf(data= feow_sf_crop_2, fill = "grey")+
+    geom_sf(data= feow_sf_regions[[region_]], fill="red")+
+    borders(database="world", regions="canada", colour="black", linetype="dashed")+
+    xlim(-170, -50) + ylim(40, 85)+ 
+    theme(axis.line=element_blank(),axis.text.x=element_blank(),
+        axis.text.y=element_blank(),axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),plot.background=element_blank())
+  }
+
+region_id_plots[["116"]] 
+
+library(patchwork)
+biplot_map_plots<-list()
+
+for(region_ in regions) {
+biplot_map_plots[[region_]] = region_plots[[region_]] + inset_element(region_id_plots[[region_]], 0, 0, .5, .5, align_to='panel')
+                        } 
+
+allregions_biplot_map <-  wrap_plots(biplot_map_plots, ncol = 7) + plot_layout(guides = 'collect') 
+allregions_biplot_map
+ggsave(allregions_biplot_map, file="allregions_biplot_map.png", dpi=300)
+
+
