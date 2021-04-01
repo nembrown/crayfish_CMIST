@@ -428,7 +428,7 @@ species.region.expand<-expand.grid(region=unique(score_spinycheek_id$region),
                                              "virile","spinycheek", "whiteriver"))
 
 scores_combined<-merge(scores_combined, species.region.expand, all=T)
-View(scores_combined)
+head(scores_combined)
 
 scores_combined$pattern.decision<-"NA"
 
@@ -515,8 +515,8 @@ for(species_ in species_names) {
                                     axis.title.y=element_blank(),
                                     panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
                                     panel.grid.minor=element_blank(),plot.background=element_blank())
-   # print(species_plots[[species_]])
-   # ggsave(species_plots[[species_]], file=paste0("Plots/plot_", species_,".png"), dpi=300)
+    # print(species_plots[[species_]])
+    # ggsave(species_plots[[species_]], file=paste0("Plots/plot_", species_,".png"), dpi=300)
                           }
 
 # check to see if it worked with virile
@@ -525,7 +525,7 @@ species_plots[["virile"]]
 
 allspp_plot <-  wrap_plots( species_plots, ncol = 2) + plot_layout(guides = 'collect') 
 allspp_plot
-# ggsave(allspp_plot, file="Plots/allspp_plot.png", dpi=300)
+ggsave(allspp_plot, file="Plots/allspp_plot.png", dpi=300)
 
 
 
@@ -547,7 +547,7 @@ for(region_ in regions) {
     geom_rect(data=NULL,aes(xmin=2,xmax=3.1,ymin=2,ymax=3.1), colour="red", fill = NA)+
     coord_equal()
   # print(region_plots[[region_]])
-  # ggsave(region_plots[[region_]], file=paste0("Plots/plot_", region_,".png"), dpi=300)
+   ggsave(region_plots[[region_]], file=paste0("Plots/plot_", region_,".png"), dpi=300)
 }
 
 # check region with 116
@@ -555,5 +555,5 @@ region_plots[["116"]]
 
 allregions_plot <-  wrap_plots( region_plots, ncol = 7) + plot_layout(guides = 'collect') 
 allregions_plot
-# ggsave(allregions_plot, file="Plots/allregions_biplot.png", width=15, height=12, units="in", dpi=300)
+ ggsave(allregions_plot, file="Plots/allregions_biplot.png", width=15, height=12, units="in", dpi=300)
 
