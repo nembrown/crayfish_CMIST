@@ -1,46 +1,55 @@
-# devtools::install_github("https://github.com/remi-daigle/CMISTR")
+
+# loading libraries -------------------------------------------------------
 library(CMISTR)
+library(ggplot2)
+library(tidyverse)
+library(RColorBrewer)
+library(patchwork)
+library(ggpattern)
+
+# For mapping
+library(ncdf4)
+library(reshape2)
+library(dplyr)
+library(ncdf4) # package for netcdf manipulation
+library(raster) # package for raster manipulation
+library(rgdal) # package for geospatial analysis
+library(maptools)
+library(sf)
+library(raster)
+library(spData)
+library(tmap)    # for static and interactive maps
+library(leaflet) # for interactive maps
+library(mapview) # for interactive maps
+library(shiny)
+library(rgdal) # spatial/shp reading
+library(viridis) # nice color palette
+library(ggmap) # ggplot functionality for maps ---> dplyr, purr is dependency
+library(ggsn) # for scale bars/north arrows in ggplots
+library(maps)
+library(mapdata)
+library(sp)
+library(rgeos)
+
+
+# Running the example ----------------------------------------------------
+
+# devtools::install_github("https://github.com/remi-daigle/CMISTR")
+
 set.seed(11)
 risks <- sample(x = c(1:3),size = 17,replace = TRUE)
-mat_risks<- matrix(risks, nrow=2, ncol=17, byrow=TRUE)
 uncertainties <- sample(x = c(1:3),size = 17,replace = TRUE)
-mat_uncertainties<- matrix(uncertainties , nrow=2, ncol=17, byrow=TRUE)
-
-
 
 score <- CMISTScore(risks,uncertainties)
 score
-colnames(df <- data.frame(matrix(ncol = 3, nrow = 0)))
-str(score)
-#runs
-
-risks
-length(risks)
-length()
-
-score_mat <- CMISTScore(mat_risks,mat_uncertainties)
-score_mat
-#does not work with a matrix. Only 17 values. 
-
-
-# Create the loop with r and c to iterate over the matrix and add scores 
-    
-for (r in 1:nrow(mat_risks))   
-    new<-CMISTScore(mat_risks[r,],mat_uncertainties[r,])
-    score[nrow(score)+1, ]<-new
-
-
-colnames(score)
-
-library(ggplot2)
 
 ggplot(score, aes(y=CMIST_Score, x=rownames(score))) + 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1) +
   geom_point()
 
+# Loops for each species score --------------------------------------------------
 
 ### marble
-
 marble_risk<-read.csv("C:Inputs//marble_risk.csv")
 marble_risk
 rownames(marble_risk)<-marble_risk$region
@@ -267,6 +276,7 @@ ggplot(score_spinycheek, aes(y=CMIST_Score, x=rownames(score_spinycheek))) +
 ############### virile
 virile_risk<-read.csv("C:Inputs//virile_risk.csv")
 virile_risk
+virile_risk<-virile_risk[-c(17:21),]
 rownames(virile_risk)<-virile_risk$region
 virile_risk_simple<-virile_risk[,-c(1:3)]
 virile_risk_simple
@@ -278,14 +288,14 @@ virile_risk_simple_1_3
 dim(virile_risk_simple_1_3)
 
 virile_uncertainties<-read.csv("C:Inputs//virile_certainty_321.csv")
+virile_uncertainties<-virile_uncertainties[-c(17:21),]
+
 rownames(virile_uncertainties)<-virile_uncertainties$ID
 virile_uncertainties_simple<-virile_uncertainties[,-c(1:3)]
 virile_uncertainties_simple_1_3<-virile_uncertainties_simple
 colnames(virile_uncertainties_simple_1_3)<-NULL
 rownames(virile_uncertainties_simple_1_3)<-NULL
 virile_uncertainties_simple_1_3
-
-
 score_virile <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
@@ -311,6 +321,8 @@ ggplot(score_virile, aes(y=CMIST_Score, x=rownames(score_virile))) +
 ############### signal
 signal_risk<-read.csv("C:Inputs//signal_risk.csv")
 signal_risk
+signal_risk<-signal_risk[-21,]
+
 rownames(signal_risk)<-signal_risk$region
 signal_risk_simple<-signal_risk[,-c(1:3)]
 signal_risk_simple
@@ -322,6 +334,8 @@ signal_risk_simple_1_3
 dim(signal_risk_simple_1_3)
 
 signal_uncertainties<-read.csv("C:Inputs//signal_certainty_321.csv")
+signal_uncertainties<-signal_uncertainties[-21,]
+
 rownames(signal_uncertainties)<-signal_uncertainties$ID
 signal_uncertainties_simple<-signal_uncertainties[,-c(1:3)]
 signal_uncertainties_simple_1_3<-signal_uncertainties_simple
@@ -397,198 +411,149 @@ ggplot(score_allegheny, aes(y=CMIST_Score, x=rownames(score_allegheny))) +
   geom_point()
 
 
+
+# Combining scores and plotting ------------------------------------------------
+
+theme_set(theme_bw())
+
 #### combining
+brewerset3<-c("allegheny"="#8DD3C7", "marble" = "#FFFF02" , "redswamp"="#BEBADA", "rusty"= "#FB8072" ,"signal"= "#80B1D3", 
+              "virile"= "#FDB462" ,"spinycheek" ="#B3DE69", "whiteriver"= "#FCCDE5")
 
-scores_combined<-rbind(score_marble_id, score_redswamp_id, score_whiteriver_id, score_rusty_id, score_spinycheek_id, score_virile_id, score_signal_id, score_allegheny_id)
-head(scores_combined)
+scores_combined<-rbind(score_marble_id, score_redswamp_id, score_whiteriver_id, score_rusty_id, 
+                       score_spinycheek_id, score_allegheny_id, score_virile_id, score_signal_id)
 
-ggplot(scores_combined, aes(y=CMIST_Score, x=region, colour=species)) + 
+species.region.expand<-expand.grid(region=unique(score_spinycheek_id$region), 
+                                   species=c("allegheny", "marble", "redswamp", "rusty" ,"signal", 
+                                             "virile","spinycheek", "whiteriver"))
+
+scores_combined<-merge(scores_combined, species.region.expand, all=T)
+View(scores_combined)
+
+scores_combined$pattern.decision<-"NA"
+
+for (i in 1:length(scores_combined$CMIST_Score)) {
+  if(is.na(scores_combined$CMIST_Score[i])==TRUE) {
+         scores_combined$pattern.decision[i] <- "yes"
+  } else {
+         scores_combined$pattern.decision[i] <- "no" 
+  }
+  }
+
+all_score_plot<-ggplot(scores_combined, aes(y=CMIST_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
-  geom_point(size=4, position=position_dodge(width=0.5))
+  geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)
 
+ggsave(all_score_plot, file="Plots/all_score_plot.png", dpi=300)
 
 #Likelihood
-ggplot(scores_combined, aes(y=Likelihood_Score, x=region, colour=species)) + 
+all_likelihood_plot<-ggplot(scores_combined, aes(y=Likelihood_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), width=.1, position=position_dodge(width=0.5)) +
-  geom_point(size=4, position=position_dodge(width=0.5))
+  geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)
+all_likelihood_plot
+ggsave(all_likelihood_plot, file="Plots/all_likelihood_plot.png", dpi=300)
+
 #Impact
-ggplot(scores_combined, aes(y=Impact_Score, x=region, colour=species)) + 
+all_impact_plot<-ggplot(scores_combined, aes(y=Impact_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=Impact_Lower, ymax=Impact_Upper), width=.1, position=position_dodge(width=0.5)) +
-  geom_point(size=4, position=position_dodge(width=0.5))
-
-
-#' #' scores <- simScore(risk=2,certainty=1)
-#' simScore <- function(risk,certainty,n=1000){
-#'   p <- probs[probs$Risk==risk&probs$Certainty==certainty,]
-#'   sample(x=p$Score, size=n, prob=p$Probability,replace=TRUE)
-#' }
-
-
-# simScore(risk=2,certainty=1)
+  geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)
+ggsave(all_impact_plot, file="Plots/all_impact_plot.png", dpi=300)
+all_impact_plot
 
 
 #### Mean risk across regions: can't do cumulative since some regions don't 
-library(tidyverse)
 scores_combined_cumulative<-scores_combined %>% group_by(region) %>% summarise_if(is.numeric, mean, na.rm=TRUE) 
 
-View(scores_combined)
+head(scores_combined)
 
-ggplot(scores_combined_cumulative, aes(y=CMIST_Score, x=region, colour=region)) + 
+combined_scores_plot_by_region<- ggplot(scores_combined_cumulative, aes(y=CMIST_Score, x=region, colour=region)) + 
+                                 geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
+                                  geom_point(size=4, position=position_dodge(width=0.5))
+
+ggsave(combined_scores_plot_by_region, file="Plots/mean_scores_plot_by_region.png", dpi=300)
+
+# Mean risk score by species
+scores_combined_cumulative_species<-scores_combined %>% group_by(species) %>% summarise_if(is.numeric, mean, na.rm=TRUE) 
+
+mean_scores_plot_by_species<- ggplot(scores_combined_cumulative_species, aes(y=CMIST_Score, x=species, colour=species)) + 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
-  geom_point(size=4, position=position_dodge(width=0.5))
+  geom_point(size=4, position=position_dodge(width=0.5))+scale_color_manual(values=brewerset3)
+mean_scores_plot_by_species
+ggsave(mean_scores_plot_by_species, file="Plots/mean_scores_plot_by_species.png", dpi=300)
 
 
 # Maps --------------------------------------------------------------------
-###### Mapping
-library(ncdf4)
-library(reshape2)
-library(dplyr)
-library(ncdf4) # package for netcdf manipulation
-library(raster) # package for raster manipulation
-library(rgdal) # package for geospatial analysis
-library(ggplot2) # package for plotting
-library(maptools)
-
-
-
-library(here)
-library(sf)
-library(raster)
-library(spData)
-library(tmap)    # for static and interactive maps
-library(leaflet) # for interactive maps
-library(mapview) # for interactive maps
-library(ggplot2) # tidyverse vis package
-library(shiny)
-library(rgdal) # spatial/shp reading
-library(viridis) # nice color palette
-library(ggmap) # ggplot functionality for maps ---> dplyr, purr is dependency
-library(ggsn) # for scale bars/north arrows in ggplots
-library(maps)
-library(mapdata)
-library(sp)
-library(rgeos)
-
-# once way to import the shape file
 feow_sf<-sf::st_read("C:Inputs//feow_hydrosheds.shp")
 feow_sf_crop<- feow_sf[feow_sf$FEOW_ID==c(101:120, 142), ]
 feow_sf_crop_2 <- feow_sf_crop[, -2]
+feow_sf_crop_2<-merge(feow_sf_crop_2, scores_combined[,c("species", "region", "CMIST_Score", "pattern.decision")], by.x=c("FEOW_ID"), by.y=c("region"))
 
-
-#plot sf with colours as id
-ggplot(feow_sf_crop_2) +
-  geom_sf(aes(fill = as.factor(FEOW_ID)))
-
-
-feow_sf_crop_2<-merge(feow_shp_crop_2, scores_combined[,c("species", "region", "CMIST_Score")], by.x=c("FEOW_ID"), by.y=c("region"))
-# cmist_data <- feow_sf_crop_2$CMIST_Score
-# colors <- (cmist_data - min(cmist_data)) / (max(cmist_data) - min(cmist_data))*254+1
-# feow_sf_crop_2$colour =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
-# 
-# palette_blue =  colorRampPalette(c('#9eceff', '#004081'))(255)[colors]
-
-
-library(RColorBrewer)
-
+na.value.forplot <- 'grey'
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
-sc <- scale_fill_gradientn(colours = myPalette(100), limits=c(min(feow_sf_crop_2$CMIST_Score), max(feow_sf_crop_2$CMIST_Score)))
+sc <- scale_fill_gradientn(colours = myPalette(100), limits=c(min(na.omit(feow_sf_crop_2$CMIST_Score)), max(na.omit(feow_sf_crop_2$CMIST_Score))), na.value='grey')
 
-
-###### For loops for plotting
-
-#map coloured by CMIST_Score in each region 
-species = unique(feow_sf_crop_2$species)
+species_names = unique(feow_sf_crop_2$species)
 species_plots = list()
+pattern.list<-c("yes"="grey", "no"="none")
 
-for(species_ in species) {
+# from raster package:
+provinces <- getData(country="Canada", level=1)
+
+# Loop for plotting map coloured by CMIST_Score in each region 
+for(species_ in species_names) {
   species_plots[[species_]] = ggplot(feow_sf_crop_2 %>% filter(species == species_)) + 
-    geom_sf(aes(fill = CMIST_Score))+ sc+
-    borders(database="world", regions="canada", colour="black", linetype="dashed")+
-    xlim(-170, -50) + ylim(40, 85)  +
-    ggtitle(paste0(species_)) + 
-    theme(axis.line=element_blank(),axis.text.x=element_blank(),
-                                      axis.text.y=element_blank(),axis.ticks=element_blank(),
-                                      axis.title.x=element_blank(),
-                                      axis.title.y=element_blank(),
-                                      panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-                                      panel.grid.minor=element_blank(),plot.background=element_blank())
-  print(species_plots[[species_]])
-  ggsave(species_plots[[species_]], file=paste0("plot_", species_,".png"), dpi=300)
-}
+                              geom_sf(aes(fill = CMIST_Score, color='NA'))+ sc+
+                              scale_color_manual(values = 'grey', labels = 'Native range', name=NULL) +
+                              guides(color = guide_legend(override.aes = list(fill = na.value.forplot)))+
+                              borders(database="lakes", fill="black")+
+                              borders(database=provinces, linetype="dashed")+
+                              borders(database="world", regions="canada", colour="#767676")+
+                              xlim(-170, -50) + ylim(40, 85)  + ggtitle(paste0(species_))+
+                              theme(axis.line=element_blank(),axis.text.x=element_blank(),
+                                    axis.text.y=element_blank(),axis.ticks=element_blank(),
+                                    axis.title.x=element_blank(),
+                                    axis.title.y=element_blank(),
+                                    panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+                                    panel.grid.minor=element_blank(),plot.background=element_blank())
+   # print(species_plots[[species_]])
+   # ggsave(species_plots[[species_]], file=paste0("Plots/plot_", species_,".png"), dpi=300)
+                          }
 
-
-# + theme(plot.title = element_text(vjust = - 10, hjust=0.1, size=16))
-
-species_plots[["marble"]]
+# check to see if it worked with virile
+species_plots[["virile"]]
 
 
 allspp_plot <-  wrap_plots( species_plots, ncol = 2) + plot_layout(guides = 'collect') 
 allspp_plot
-ggsave(allspp_plot, file="allsppp_plot.png", dpi=300)
+# ggsave(allspp_plot, file="Plots/allspp_plot.png", dpi=300)
 
 
 
+# Biplots for likelihood and invasion  -----------------------------------------------------------------
 
+brewerset3<-c("allegheny"="#8DD3C7", "marble" = "#FFFF02" , "redswamp"="#BEBADA", "rusty"= "#FB8072" ,"signal"= "#80B1D3", 
+             "virile"= "#FDB462" ,"spinycheek" ="#B3DE69", "whiteriver"= "#FCCDE5")
 
-# biplots -----------------------------------------------------------------
-
-
-
-theme_set(theme_bw())
 regions = unique(scores_combined$region)
 region_plots = list()
 
 for(region_ in regions) {
-  
   region_plots[[region_]] = ggplot(scores_combined %>% filter(region == region_), aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
-    geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), width=.5) +
-    geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper)) +
-    geom_point(size=4)+ylim(0,3)+xlim(0,3)+
+    geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), size=1) +
+    geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper), size=1) +
+    geom_point(size=3)+ylim(1,3.1)+xlim(1,3.1)+
     ggtitle(paste0(region_)) +
-    scale_colour_discrete(drop=FALSE, limits=species)+
-    geom_rect(data=NULL,aes(xmin=2,xmax=Inf,ymin=2,ymax=Inf), colour="red", fill = NA)
+    scale_color_manual(values=brewerset3, drop=FALSE, limits=species_names)+
+    geom_rect(data=NULL,aes(xmin=2,xmax=3.1,ymin=2,ymax=3.1), colour="red", fill = NA)+
+    coord_equal()
   # print(region_plots[[region_]])
-  # ggsave(region_plots[[region_]], file=paste0("plot_", region_,".png"), dpi=300)
+  # ggsave(region_plots[[region_]], file=paste0("Plots/plot_", region_,".png"), dpi=300)
 }
 
+# check region with 116
 region_plots[["116"]]
-
 
 allregions_plot <-  wrap_plots( region_plots, ncol = 7) + plot_layout(guides = 'collect') 
 allregions_plot
-ggsave(allregions_plot, file="allregions_plot.png", dpi=300)
-
-##### identification map of which region 
-
-
-region_id_plots = list()
-feow_sf_regions=list()
-
-for(region_ in regions) {
-  feow_sf_regions[[region_]]<-feow_sf_crop_2 %>% filter(FEOW_ID==region_)
-  region_id_plots[[region_]] = ggplot(feow_sf_crop_2) + geom_sf(data= feow_sf_crop_2, fill = "grey")+
-    geom_sf(data= feow_sf_regions[[region_]], fill="red")+
-    borders(database="world", regions="canada", colour="black", linetype="dashed")+
-    xlim(-170, -50) + ylim(40, 85)+ 
-    theme(axis.line=element_blank(),axis.text.x=element_blank(),
-        axis.text.y=element_blank(),axis.ticks=element_blank(),
-        axis.title.x=element_blank(),
-        axis.title.y=element_blank(),
-        panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-        panel.grid.minor=element_blank(),plot.background=element_blank())
-  }
-
-region_id_plots[["116"]] 
-
-library(patchwork)
-biplot_map_plots<-list()
-
-for(region_ in regions) {
-biplot_map_plots[[region_]] = region_plots[[region_]] + inset_element(region_id_plots[[region_]], 0, 0, .5, .5, align_to='panel')
-                        } 
-
-allregions_biplot_map <-  wrap_plots(biplot_map_plots, ncol = 7) + plot_layout(guides = 'collect') 
-allregions_biplot_map
-ggsave(allregions_biplot_map, file="allregions_biplot_map.png", dpi=300)
-
+# ggsave(allregions_plot, file="Plots/allregions_biplot.png", width=15, height=12, units="in", dpi=300)
 
