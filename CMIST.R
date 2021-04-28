@@ -55,33 +55,30 @@ marble_risk
 rownames(marble_risk)<-marble_risk$region
 marble_risk_simple<-marble_risk[,-c(1:3)]
 marble_risk_simple
-marble_risk_simple_1_3<-marble_risk_simple+1
-marble_risk_simple_1_3
-colnames(marble_risk_simple_1_3)<-NULL
-rownames(marble_risk_simple_1_3)<-NULL
-marble_risk_simple_1_3
-dim(marble_risk_simple_1_3)
+colnames(marble_risk_simple)<-NULL
+rownames(marble_risk_simple)<-NULL
+marble_risk_simple
+dim(marble_risk_simple)
 
 marble_uncertainties<-read.csv("C:Inputs//marble_certainty_321.csv")
-rownames(marble_uncertainties)<-marble_uncertainties$ID
+rownames(marble_uncertainties)<-marble_uncertainties$region
 marble_uncertainties_simple<-marble_uncertainties[,-c(1:3)]
-marble_uncertainties_simple_1_3<-marble_uncertainties_simple
-colnames(marble_uncertainties_simple_1_3)<-NULL
-rownames(marble_uncertainties_simple_1_3)<-NULL
-marble_uncertainties_simple_1_3
+colnames(marble_uncertainties_simple)<-NULL
+rownames(marble_uncertainties_simple)<-NULL
+marble_uncertainties_simple
 
 
 score_marble <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
 for (r in 1:21) {
-    new_marble<-CMISTScore(as.numeric(marble_risk_simple_1_3[r,]),as.numeric(marble_uncertainties_simple_1_3[r,]))
+    new_marble<-CMISTScore(as.numeric(marble_risk_simple[r,]),as.numeric(marble_uncertainties_simple[r,]))
     score_marble[nrow(score_marble)+1, ]<-new_marble
     }
 
     
 score_marble    
-rownames(score_marble)<-rownames(marble_risk_simple)
+rownames(score_marble)<-rownames(marble_risk)
 colnames(score_marble)<-colnames(score)
 
 score_marble_id<-score_marble
@@ -100,33 +97,31 @@ redswamp_risk
 rownames(redswamp_risk)<-redswamp_risk$region
 redswamp_risk_simple<-redswamp_risk[,-c(1:3)]
 redswamp_risk_simple
-redswamp_risk_simple_1_3<-redswamp_risk_simple+1
-redswamp_risk_simple_1_3
-colnames(redswamp_risk_simple_1_3)<-NULL
-rownames(redswamp_risk_simple_1_3)<-NULL
-redswamp_risk_simple_1_3
-dim(redswamp_risk_simple_1_3)
+colnames(redswamp_risk_simple)<-NULL
+rownames(redswamp_risk_simple)<-NULL
+redswamp_risk_simple
+dim(redswamp_risk_simple)
 
 redswamp_uncertainties<-read.csv("C:Inputs//redswamp_certainty_321.csv")
 rownames(redswamp_uncertainties)<-redswamp_uncertainties$ID
 redswamp_uncertainties_simple<-redswamp_uncertainties[,-c(1:3)]
-redswamp_uncertainties_simple_1_3<-redswamp_uncertainties_simple
-colnames(redswamp_uncertainties_simple_1_3)<-NULL
-rownames(redswamp_uncertainties_simple_1_3)<-NULL
-redswamp_uncertainties_simple_1_3
+redswamp_uncertainties_simple<-redswamp_uncertainties_simple
+colnames(redswamp_uncertainties_simple)<-NULL
+rownames(redswamp_uncertainties_simple)<-NULL
+redswamp_uncertainties_simple
 
 
 score_redswamp <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
 for (r in 1:21) {
-  new_redswamp<-CMISTScore(as.numeric(redswamp_risk_simple_1_3[r,]),as.numeric(redswamp_uncertainties_simple_1_3[r,]))
+  new_redswamp<-CMISTScore(as.numeric(redswamp_risk_simple[r,]),as.numeric(redswamp_uncertainties_simple[r,]))
   score_redswamp[nrow(score_redswamp)+1, ]<-new_redswamp
 }
 
 
 score_redswamp    
-rownames(score_redswamp)<-rownames(redswamp_risk_simple)
+rownames(score_redswamp)<-rownames(redswamp_risk)
 colnames(score_redswamp)<-colnames(score)
 
 score_redswamp_id<-score_redswamp
@@ -143,34 +138,31 @@ whiteriver_risk<-read.csv("C:Inputs//whiteriver_risk.csv")
 whiteriver_risk
 rownames(whiteriver_risk)<-whiteriver_risk$region
 whiteriver_risk_simple<-whiteriver_risk[,-c(1:3)]
+colnames(whiteriver_risk_simple)<-NULL
+rownames(whiteriver_risk_simple)<-NULL
 whiteriver_risk_simple
-whiteriver_risk_simple_1_3<-whiteriver_risk_simple+1
-whiteriver_risk_simple_1_3
-colnames(whiteriver_risk_simple_1_3)<-NULL
-rownames(whiteriver_risk_simple_1_3)<-NULL
-whiteriver_risk_simple_1_3
-dim(whiteriver_risk_simple_1_3)
+dim(whiteriver_risk_simple)
 
 whiteriver_uncertainties<-read.csv("C:Inputs//whiteriver_certainty_321.csv")
 rownames(whiteriver_uncertainties)<-whiteriver_uncertainties$ID
 whiteriver_uncertainties_simple<-whiteriver_uncertainties[,-c(1:3)]
-whiteriver_uncertainties_simple_1_3<-whiteriver_uncertainties_simple
-colnames(whiteriver_uncertainties_simple_1_3)<-NULL
-rownames(whiteriver_uncertainties_simple_1_3)<-NULL
-whiteriver_uncertainties_simple_1_3
+whiteriver_uncertainties_simple<-whiteriver_uncertainties_simple
+colnames(whiteriver_uncertainties_simple)<-NULL
+rownames(whiteriver_uncertainties_simple)<-NULL
+whiteriver_uncertainties_simple
 
 
 score_whiteriver <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
 for (r in 1:21) {
-  new_whiteriver<-CMISTScore(as.numeric(whiteriver_risk_simple_1_3[r,]),as.numeric(whiteriver_uncertainties_simple_1_3[r,]))
+  new_whiteriver<-CMISTScore(as.numeric(whiteriver_risk_simple[r,]),as.numeric(whiteriver_uncertainties_simple[r,]))
   score_whiteriver[nrow(score_whiteriver)+1, ]<-new_whiteriver
 }
 
 
 score_whiteriver    
-rownames(score_whiteriver)<-rownames(whiteriver_risk_simple)
+rownames(score_whiteriver)<-rownames(whiteriver_risk)
 colnames(score_whiteriver)<-colnames(score)
 
 score_whiteriver_id<-score_whiteriver
@@ -188,34 +180,31 @@ rusty_risk<-read.csv("C:Inputs//rusty_risk.csv")
 rusty_risk
 rownames(rusty_risk)<-rusty_risk$region
 rusty_risk_simple<-rusty_risk[,-c(1:3)]
+colnames(rusty_risk_simple)<-NULL
+rownames(rusty_risk_simple)<-NULL
 rusty_risk_simple
-rusty_risk_simple_1_3<-rusty_risk_simple+1
-rusty_risk_simple_1_3
-colnames(rusty_risk_simple_1_3)<-NULL
-rownames(rusty_risk_simple_1_3)<-NULL
-rusty_risk_simple_1_3
-dim(rusty_risk_simple_1_3)
+dim(rusty_risk_simple)
 
 rusty_uncertainties<-read.csv("C:Inputs//rusty_certainty_321.csv")
 rownames(rusty_uncertainties)<-rusty_uncertainties$ID
 rusty_uncertainties_simple<-rusty_uncertainties[,-c(1:3)]
-rusty_uncertainties_simple_1_3<-rusty_uncertainties_simple
-colnames(rusty_uncertainties_simple_1_3)<-NULL
-rownames(rusty_uncertainties_simple_1_3)<-NULL
-rusty_uncertainties_simple_1_3
+rusty_uncertainties_simple<-rusty_uncertainties_simple
+colnames(rusty_uncertainties_simple)<-NULL
+rownames(rusty_uncertainties_simple)<-NULL
+rusty_uncertainties_simple
 
 
 score_rusty <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
 for (r in 1:21) {
-  new_rusty<-CMISTScore(as.numeric(rusty_risk_simple_1_3[r,]),as.numeric(rusty_uncertainties_simple_1_3[r,]))
+  new_rusty<-CMISTScore(as.numeric(rusty_risk_simple[r,]),as.numeric(rusty_uncertainties_simple[r,]))
   score_rusty[nrow(score_rusty)+1, ]<-new_rusty
 }
 
 
 score_rusty    
-rownames(score_rusty)<-rownames(rusty_risk_simple)
+rownames(score_rusty)<-rownames(rusty_risk)
 colnames(score_rusty)<-colnames(score)
 
 score_rusty_id<-score_rusty
@@ -234,34 +223,31 @@ spinycheek_risk<-read.csv("C:Inputs//spinycheek_risk.csv")
 spinycheek_risk
 rownames(spinycheek_risk)<-spinycheek_risk$region
 spinycheek_risk_simple<-spinycheek_risk[,-c(1:3)]
+colnames(spinycheek_risk_simple)<-NULL
+rownames(spinycheek_risk_simple)<-NULL
 spinycheek_risk_simple
-spinycheek_risk_simple_1_3<-spinycheek_risk_simple+1
-spinycheek_risk_simple_1_3
-colnames(spinycheek_risk_simple_1_3)<-NULL
-rownames(spinycheek_risk_simple_1_3)<-NULL
-spinycheek_risk_simple_1_3
-dim(spinycheek_risk_simple_1_3)
+dim(spinycheek_risk_simple)
 
 spinycheek_uncertainties<-read.csv("C:Inputs//spinycheek_certainty_321.csv")
 rownames(spinycheek_uncertainties)<-spinycheek_uncertainties$ID
 spinycheek_uncertainties_simple<-spinycheek_uncertainties[,-c(1:3)]
-spinycheek_uncertainties_simple_1_3<-spinycheek_uncertainties_simple
-colnames(spinycheek_uncertainties_simple_1_3)<-NULL
-rownames(spinycheek_uncertainties_simple_1_3)<-NULL
-spinycheek_uncertainties_simple_1_3
+spinycheek_uncertainties_simple<-spinycheek_uncertainties_simple
+colnames(spinycheek_uncertainties_simple)<-NULL
+rownames(spinycheek_uncertainties_simple)<-NULL
+spinycheek_uncertainties_simple
 
 
 score_spinycheek <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
 for (r in 1:21) {
-  new_spinycheek<-CMISTScore(as.numeric(spinycheek_risk_simple_1_3[r,]),as.numeric(spinycheek_uncertainties_simple_1_3[r,]))
+  new_spinycheek<-CMISTScore(as.numeric(spinycheek_risk_simple[r,]),as.numeric(spinycheek_uncertainties_simple[r,]))
   score_spinycheek[nrow(score_spinycheek)+1, ]<-new_spinycheek
 }
 
 
 score_spinycheek    
-rownames(score_spinycheek)<-rownames(spinycheek_risk_simple)
+rownames(score_spinycheek)<-rownames(spinycheek_risk)
 colnames(score_spinycheek)<-colnames(score)
 
 score_spinycheek_id<-score_spinycheek
@@ -279,34 +265,31 @@ virile_risk
 virile_risk<-virile_risk[-c(17:21),]
 rownames(virile_risk)<-virile_risk$region
 virile_risk_simple<-virile_risk[,-c(1:3)]
+colnames(virile_risk_simple)<-NULL
+rownames(virile_risk_simple)<-NULL
 virile_risk_simple
-virile_risk_simple_1_3<-virile_risk_simple+1
-virile_risk_simple_1_3
-colnames(virile_risk_simple_1_3)<-NULL
-rownames(virile_risk_simple_1_3)<-NULL
-virile_risk_simple_1_3
-dim(virile_risk_simple_1_3)
+dim(virile_risk_simple)
 
 virile_uncertainties<-read.csv("C:Inputs//virile_certainty_321.csv")
 virile_uncertainties<-virile_uncertainties[-c(17:21),]
 
 rownames(virile_uncertainties)<-virile_uncertainties$ID
 virile_uncertainties_simple<-virile_uncertainties[,-c(1:3)]
-virile_uncertainties_simple_1_3<-virile_uncertainties_simple
-colnames(virile_uncertainties_simple_1_3)<-NULL
-rownames(virile_uncertainties_simple_1_3)<-NULL
-virile_uncertainties_simple_1_3
+virile_uncertainties_simple<-virile_uncertainties_simple
+colnames(virile_uncertainties_simple)<-NULL
+rownames(virile_uncertainties_simple)<-NULL
+virile_uncertainties_simple
 score_virile <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
 for (r in 1:16) {
-  new_virile<-CMISTScore(as.numeric(virile_risk_simple_1_3[r,]),as.numeric(virile_uncertainties_simple_1_3[r,]))
+  new_virile<-CMISTScore(as.numeric(virile_risk_simple[r,]),as.numeric(virile_uncertainties_simple[r,]))
   score_virile[nrow(score_virile)+1, ]<-new_virile
 }
 
 
 score_virile    
-rownames(score_virile)<-rownames(virile_risk_simple)
+rownames(score_virile)<-rownames(virile_risk)
 colnames(score_virile)<-colnames(score)
 
 score_virile_id<-score_virile
@@ -325,36 +308,33 @@ signal_risk<-signal_risk[-21,]
 
 rownames(signal_risk)<-signal_risk$region
 signal_risk_simple<-signal_risk[,-c(1:3)]
+colnames(signal_risk_simple)<-NULL
+rownames(signal_risk_simple)<-NULL
 signal_risk_simple
-signal_risk_simple_1_3<-signal_risk_simple+1
-signal_risk_simple_1_3
-colnames(signal_risk_simple_1_3)<-NULL
-rownames(signal_risk_simple_1_3)<-NULL
-signal_risk_simple_1_3
-dim(signal_risk_simple_1_3)
+dim(signal_risk_simple)
 
 signal_uncertainties<-read.csv("C:Inputs//signal_certainty_321.csv")
 signal_uncertainties<-signal_uncertainties[-21,]
 
 rownames(signal_uncertainties)<-signal_uncertainties$ID
 signal_uncertainties_simple<-signal_uncertainties[,-c(1:3)]
-signal_uncertainties_simple_1_3<-signal_uncertainties_simple
-colnames(signal_uncertainties_simple_1_3)<-NULL
-rownames(signal_uncertainties_simple_1_3)<-NULL
-signal_uncertainties_simple_1_3
+signal_uncertainties_simple<-signal_uncertainties_simple
+colnames(signal_uncertainties_simple)<-NULL
+rownames(signal_uncertainties_simple)<-NULL
+signal_uncertainties_simple
 
 
 score_signal <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
 for (r in 1:20) {
-  new_signal<-CMISTScore(as.numeric(signal_risk_simple_1_3[r,]),as.numeric(signal_uncertainties_simple_1_3[r,]))
+  new_signal<-CMISTScore(as.numeric(signal_risk_simple[r,]),as.numeric(signal_uncertainties_simple[r,]))
   score_signal[nrow(score_signal)+1, ]<-new_signal
 }
 
 
 score_signal    
-rownames(score_signal)<-rownames(signal_risk_simple)
+rownames(score_signal)<-rownames(signal_risk)
 colnames(score_signal)<-colnames(score)
 
 score_signal_id<-score_signal
@@ -371,34 +351,31 @@ allegheny_risk<-read.csv("C:Inputs//allegheny_risk.csv")
 allegheny_risk
 rownames(allegheny_risk)<-allegheny_risk$region
 allegheny_risk_simple<-allegheny_risk[,-c(1:3)]
+colnames(allegheny_risk_simple)<-NULL
+rownames(allegheny_risk_simple)<-NULL
 allegheny_risk_simple
-allegheny_risk_simple_1_3<-allegheny_risk_simple+1
-allegheny_risk_simple_1_3
-colnames(allegheny_risk_simple_1_3)<-NULL
-rownames(allegheny_risk_simple_1_3)<-NULL
-allegheny_risk_simple_1_3
-dim(allegheny_risk_simple_1_3)
+dim(allegheny_risk_simple)
 
 allegheny_uncertainties<-read.csv("C:Inputs//allegheny_certainty_321.csv")
 rownames(allegheny_uncertainties)<-allegheny_uncertainties$ID
 allegheny_uncertainties_simple<-allegheny_uncertainties[,-c(1:3)]
-allegheny_uncertainties_simple_1_3<-allegheny_uncertainties_simple
-colnames(allegheny_uncertainties_simple_1_3)<-NULL
-rownames(allegheny_uncertainties_simple_1_3)<-NULL
-allegheny_uncertainties_simple_1_3
+allegheny_uncertainties_simple<-allegheny_uncertainties_simple
+colnames(allegheny_uncertainties_simple)<-NULL
+rownames(allegheny_uncertainties_simple)<-NULL
+allegheny_uncertainties_simple
 
 
 score_allegheny <- data.frame(matrix(ncol = 9, nrow = 0))
 
 set.seed(11)
 for (r in 1:21) {
-  new_allegheny<-CMISTScore(as.numeric(allegheny_risk_simple_1_3[r,]),as.numeric(allegheny_uncertainties_simple_1_3[r,]))
+  new_allegheny<-CMISTScore(as.numeric(allegheny_risk_simple[r,]),as.numeric(allegheny_uncertainties_simple[r,]))
   score_allegheny[nrow(score_allegheny)+1, ]<-new_allegheny
 }
 
 
 score_allegheny    
-rownames(score_allegheny)<-rownames(allegheny_risk_simple)
+rownames(score_allegheny)<-rownames(allegheny_risk)
 colnames(score_allegheny)<-colnames(score)
 
 score_allegheny_id<-score_allegheny
@@ -472,6 +449,22 @@ combined_scores_plot_by_region<- ggplot(scores_combined_cumulative, aes(y=CMIST_
 
 ggsave(combined_scores_plot_by_region, file="Plots/mean_scores_plot_by_region.png", dpi=300)
 
+mean_likelihood_plot_by_region<- ggplot(scores_combined_cumulative, aes(y=Likelihood_Score, x=region, colour=region)) + 
+  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), width=.1, position=position_dodge(width=0.5)) +
+  geom_point(size=4, position=position_dodge(width=0.5))
+
+ggsave(mean_likelihood_plot_by_region, file="Plots/mean_likelihood_plot_by_region.png", dpi=300)
+
+mean_impact_plot_by_region<- ggplot(scores_combined_cumulative, aes(y=Impact_Score, x=region, colour=region)) + 
+  geom_errorbar(aes(ymin=Impact_Lower, ymax=Impact_Upper), width=.1, position=position_dodge(width=0.5)) +
+  geom_point(size=4, position=position_dodge(width=0.5))
+
+ggsave(mean_impact_plot_by_region, file="Plots/mean_impact_plot_by_region.png", dpi=300)
+
+
+
+
+
 # Mean risk score by species
 scores_combined_cumulative_species<-scores_combined %>% group_by(species) %>% summarise_if(is.numeric, mean, na.rm=TRUE) 
 
@@ -480,6 +473,20 @@ mean_scores_plot_by_species<- ggplot(scores_combined_cumulative_species, aes(y=C
   geom_point(size=4, position=position_dodge(width=0.5))+scale_color_manual(values=brewerset3)
 mean_scores_plot_by_species
 ggsave(mean_scores_plot_by_species, file="Plots/mean_scores_plot_by_species.png", dpi=300)
+
+#Likelihood
+mean_likelihood_plot_by_species<- ggplot(scores_combined_cumulative_species, aes(y=Likelihood_Score, x=species, colour=species)) + 
+  geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), width=.1, position=position_dodge(width=0.5)) +
+  geom_point(size=4, position=position_dodge(width=0.5))+scale_color_manual(values=brewerset3)
+mean_likelihood_plot_by_species
+ggsave(mean_likelihood_plot_by_species, file="Plots/mean_likelihood_plot_by_species.png", dpi=300)
+
+#Invasion
+mean_impact_plot_by_species<- ggplot(scores_combined_cumulative_species, aes(y=Impact_Score, x=species, colour=species)) + 
+  geom_errorbar(aes(ymin=Impact_Lower, ymax=Impact_Upper), width=.1, position=position_dodge(width=0.5)) +
+  geom_point(size=4, position=position_dodge(width=0.5))+scale_color_manual(values=brewerset3)
+mean_impact_plot_by_species
+ggsave(mean_impact_plot_by_species, file="Plots/mean_impact_plot_by_species.png", dpi=300)
 
 
 # Maps --------------------------------------------------------------------
@@ -505,7 +512,7 @@ for(species_ in species_names) {
                               geom_sf(aes(fill = CMIST_Score, color='NA'))+ sc+
                               scale_color_manual(values = 'grey', labels = 'Native range', name=NULL) +
                               guides(color = guide_legend(override.aes = list(fill = na.value.forplot)))+
-                              borders(database="lakes", fill="black")+
+                              borders(database="lakes", fill="black", colour="black")+
                               borders(database=provinces, linetype="dashed")+
                               borders(database="world", regions="canada", colour="#767676")+
                               xlim(-170, -50) + ylim(40, 85)  + ggtitle(paste0(species_))+
