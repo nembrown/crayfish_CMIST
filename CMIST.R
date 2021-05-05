@@ -6,6 +6,7 @@ library(tidyverse)
 library(RColorBrewer)
 library(patchwork)
 library(ggpattern)
+library(ggstance)
 
 # For mapping
 library(ncdf4)
@@ -30,6 +31,7 @@ library(maps)
 library(mapdata)
 library(sp)
 library(rgeos)
+library(ggsflabel)
 
 
 # Running the example ----------------------------------------------------
@@ -83,7 +85,7 @@ colnames(score_marble)<-colnames(score)
 
 score_marble_id<-score_marble
 score_marble_id$region<-rownames(score_marble_id)
-score_marble_id$species<-"marble"
+score_marble_id$species<-"Marble"
 score_marble_id
 
 ggplot(score_marble, aes(y=CMIST_Score, x=rownames(score_marble))) + 
@@ -126,7 +128,7 @@ colnames(score_redswamp)<-colnames(score)
 
 score_redswamp_id<-score_redswamp
 score_redswamp_id$region<-rownames(score_redswamp_id)
-score_redswamp_id$species<-"redswamp"
+score_redswamp_id$species<-"Red Swamp"
 score_redswamp_id
 
 ggplot(score_redswamp, aes(y=CMIST_Score, x=rownames(score_redswamp))) + 
@@ -167,7 +169,7 @@ colnames(score_whiteriver)<-colnames(score)
 
 score_whiteriver_id<-score_whiteriver
 score_whiteriver_id$region<-rownames(score_whiteriver_id)
-score_whiteriver_id$species<-"whiteriver"
+score_whiteriver_id$species<-"White River"
 score_whiteriver_id
 
 ggplot(score_whiteriver, aes(y=CMIST_Score, x=rownames(score_whiteriver))) + 
@@ -209,7 +211,7 @@ colnames(score_rusty)<-colnames(score)
 
 score_rusty_id<-score_rusty
 score_rusty_id$region<-rownames(score_rusty_id)
-score_rusty_id$species<-"rusty"
+score_rusty_id$species<-"Rusty"
 score_rusty_id
 
 ggplot(score_rusty, aes(y=CMIST_Score, x=rownames(score_rusty))) + 
@@ -252,7 +254,7 @@ colnames(score_spinycheek)<-colnames(score)
 
 score_spinycheek_id<-score_spinycheek
 score_spinycheek_id$region<-rownames(score_spinycheek_id)
-score_spinycheek_id$species<-"spinycheek"
+score_spinycheek_id$species<-"Spiny-cheek"
 score_spinycheek_id
 
 ggplot(score_spinycheek, aes(y=CMIST_Score, x=rownames(score_spinycheek))) + 
@@ -294,7 +296,7 @@ colnames(score_virile)<-colnames(score)
 
 score_virile_id<-score_virile
 score_virile_id$region<-rownames(score_virile_id)
-score_virile_id$species<-"virile"
+score_virile_id$species<-"Virile"
 score_virile_id
 
 ggplot(score_virile, aes(y=CMIST_Score, x=rownames(score_virile))) + 
@@ -339,7 +341,7 @@ colnames(score_signal)<-colnames(score)
 
 score_signal_id<-score_signal
 score_signal_id$region<-rownames(score_signal_id)
-score_signal_id$species<-"signal"
+score_signal_id$species<-"Signal"
 score_signal_id
 
 ggplot(score_signal, aes(y=CMIST_Score, x=rownames(score_signal))) + 
@@ -380,7 +382,7 @@ colnames(score_allegheny)<-colnames(score)
 
 score_allegheny_id<-score_allegheny
 score_allegheny_id$region<-rownames(score_allegheny_id)
-score_allegheny_id$species<-"allegheny"
+score_allegheny_id$species<-"Allegheny"
 score_allegheny_id
 
 ggplot(score_allegheny, aes(y=CMIST_Score, x=rownames(score_allegheny))) + 
@@ -394,18 +396,27 @@ ggplot(score_allegheny, aes(y=CMIST_Score, x=rownames(score_allegheny))) +
 theme_set(theme_bw())
 
 #### combining
-brewerset3<-c("allegheny"="#8DD3C7", "marble" = "#FFFF02" , "redswamp"="#BEBADA", "rusty"= "#FB8072" ,"signal"= "#80B1D3", 
-              "virile"= "#FDB462" ,"spinycheek" ="#B3DE69", "whiteriver"= "#FCCDE5")
+brewerset3<-c("Allegheny"="#8DD3C7", "Marble" = "#FFFF02" , "Red Swamp"="#BEBADA", "Rusty"= "#FB8072" ,"Signal"= "#80B1D3", 
+              "Virile"= "#FDB462" ,"Spiny-cheek" ="#B3DE69", "White River"= "#FCCDE5")
 
 scores_combined<-rbind(score_marble_id, score_redswamp_id, score_whiteriver_id, score_rusty_id, 
                        score_spinycheek_id, score_allegheny_id, score_virile_id, score_signal_id)
 
 species.region.expand<-expand.grid(region=unique(score_spinycheek_id$region), 
-                                   species=c("allegheny", "marble", "redswamp", "rusty" ,"signal", 
-                                             "virile","spinycheek", "whiteriver"))
+                                   species=c( "Rusty" ,"Signal", "Virile","Red Swamp",
+                                             "Spiny-cheek", "White River", "Allegheny",  "Marble"))
 
 scores_combined<-merge(scores_combined, species.region.expand, all=T)
 head(scores_combined)
+
+scores_combined$species<-factor(scores_combined$species, levels=c("Rusty" ,"Signal", "Virile","Red Swamp",
+           "Spiny-cheek", "White River", "Allegheny",  "Marble"))
+
+scores_combined$region<-factor(scores_combined$region, levels=c(
+                                "101", "102", "104", "105", "106", "110", "111", "112", "113", 
+                                "103", "120", "107", "108", "142", 
+                                "109", "116", "117", 
+                                "114", "115", "118", "119"))
 
 scores_combined$pattern.decision<-"NA"
 
@@ -420,22 +431,47 @@ for (i in 1:length(scores_combined$CMIST_Score)) {
 all_score_plot<-ggplot(scores_combined, aes(y=CMIST_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
   geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)
+all_score_plot
 
-ggsave(all_score_plot, file="Plots/all_score_plot.png", dpi=300)
+ggsave(all_score_plot, file="Plots/all_score_plot.png", dpi=600)
 
 #Likelihood
 all_likelihood_plot<-ggplot(scores_combined, aes(y=Likelihood_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), width=.1, position=position_dodge(width=0.5)) +
   geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)
 all_likelihood_plot
-ggsave(all_likelihood_plot, file="Plots/all_likelihood_plot.png", dpi=300)
+ggsave(all_likelihood_plot, file="Plots/all_likelihood_plot.png", dpi=600)
 
 #Impact
 all_impact_plot<-ggplot(scores_combined, aes(y=Impact_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=Impact_Lower, ymax=Impact_Upper), width=.1, position=position_dodge(width=0.5)) +
   geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)
-ggsave(all_impact_plot, file="Plots/all_impact_plot.png", dpi=300)
+ggsave(all_impact_plot, file="Plots/all_impact_plot.png", dpi=600)
 all_impact_plot
+
+##### calculations for numbers in text
+max(na.omit(scores_combined$CMIST_Score))
+scores_combined$CMIST_Lower[scores_combined$CMIST_Score==max(na.omit(scores_combined$CMIST_Score))]
+scores_combined$CMIST_Upper[scores_combined$CMIST_Score==max(na.omit(scores_combined$CMIST_Score))]
+min(na.omit(scores_combined$CMIST_Score))
+scores_combined$CMIST_Lower[scores_combined$CMIST_Score==min(na.omit(scores_combined$CMIST_Score))]
+scores_combined$CMIST_Upper[scores_combined$CMIST_Score==min(na.omit(scores_combined$CMIST_Score))]
+
+
+max(na.omit(scores_combined$Likelihood_Score))
+scores_combined$Likelihood_Lower[scores_combined$Likelihood_Score==max(na.omit(scores_combined$Likelihood_Score))]
+scores_combined$Likelihood_Upper[scores_combined$Likelihood_Score==max(na.omit(scores_combined$Likelihood_Score))]
+min(na.omit(scores_combined$Likelihood_Score))
+scores_combined$Likelihood_Lower[scores_combined$Likelihood_Score==min(na.omit(scores_combined$Likelihood_Score))]
+scores_combined$Likelihood_Upper[scores_combined$Likelihood_Score==min(na.omit(scores_combined$Likelihood_Score))]
+
+max(na.omit(scores_combined$Impact_Score))
+scores_combined$Impact_Lower[scores_combined$Impact_Score==max(na.omit(scores_combined$Impact_Score))]
+scores_combined$Impact_Upper[scores_combined$Impact_Score==max(na.omit(scores_combined$Impact_Score))]
+min(na.omit(scores_combined$Impact_Score))
+scores_combined$Impact_Lower[scores_combined$Impact_Score==min(na.omit(scores_combined$Impact_Score))]
+scores_combined$Impact_Upper[scores_combined$Impact_Score==min(na.omit(scores_combined$Impact_Score))]
+
 
 
 #### Mean risk across regions: can't do cumulative since some regions don't 
@@ -445,7 +481,7 @@ head(scores_combined)
 
 combined_scores_plot_by_region<- ggplot(scores_combined_cumulative, aes(y=CMIST_Score, x=region, colour=region)) + 
                                  geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
-                                  geom_point(size=4, position=position_dodge(width=0.5))
+                                 geom_point(size=4, position=position_dodge(width=0.5))
 
 ggsave(combined_scores_plot_by_region, file="Plots/mean_scores_plot_by_region.png", dpi=300)
 
@@ -532,35 +568,65 @@ species_plots[["virile"]]
 
 allspp_plot <-  wrap_plots( species_plots, ncol = 2) + plot_layout(guides = 'collect') 
 allspp_plot
-ggsave(allspp_plot, file="Plots/allspp_plot.png", dpi=300)
+ggsave(allspp_plot, file="Plots/allspp_plot.pdf", dpi=600)
 
+allspp_plot_map <-  wrap_plots( species_plots, ncol = 4) + plot_layout(guides = 'collect') 
+allspp_plot_map
+
+allspp_plot_map_combined <-  (all_score_plot / allspp_plot_map) + plot_layout(guides = 'collect')+ plot_annotation(tag_levels = 'a')
+allspp_plot_map_combined
+ggsave(allspp_plot_map_combined, file="Plots/allspp_plot_map_combined.png", dpi=600)
 
 
 # Biplots for likelihood and invasion  -----------------------------------------------------------------
 
-brewerset3<-c("allegheny"="#8DD3C7", "marble" = "#FFFF02" , "redswamp"="#BEBADA", "rusty"= "#FB8072" ,"signal"= "#80B1D3", 
-             "virile"= "#FDB462" ,"spinycheek" ="#B3DE69", "whiteriver"= "#FCCDE5")
+View(scores_combined)
+#JITTER ERROR AND GEOM POINT
 
 regions = unique(scores_combined$region)
 region_plots = list()
 
 for(region_ in regions) {
   region_plots[[region_]] = ggplot(scores_combined %>% filter(region == region_), aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
-    geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), size=1) +
+    geom_rect(data=NULL,aes(xmin=2,xmax=3,ymin=2,ymax=3), colour="black", fill = NA, linetype="dashed")+
+    geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), size=1, position=position_dodge(width=0.1)) +
     geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper), size=1) +
-    geom_point(size=3)+ylim(1,3.1)+xlim(1,3.1)+
+    geom_point(size=3,position=position_dodge(width=0.1) )+
+    ylim(1,3.1)+xlim(1,3.1)+
     ggtitle(paste0(region_)) +
     scale_color_manual(values=brewerset3, drop=FALSE, limits=species_names)+
-    geom_rect(data=NULL,aes(xmin=2,xmax=3.1,ymin=2,ymax=3.1), colour="red", fill = NA)+
     coord_equal()
   # print(region_plots[[region_]])
    ggsave(region_plots[[region_]], file=paste0("Plots/plot_", region_,".png"), dpi=300)
 }
 
 # check region with 116
-region_plots[["116"]]
+region_plots[["115"]]
 
 allregions_plot <-  wrap_plots( region_plots, ncol = 7) + plot_layout(guides = 'collect') 
 allregions_plot
- ggsave(allregions_plot, file="Plots/allregions_biplot.png", width=15, height=12, units="in", dpi=300)
+ggsave(allregions_plot, file="Plots/allregions_biplot.png", width=15, height=12, units="in", dpi=600)
 
+ 
+ 
+ ###### Maps for region ID number
+
+
+
+region_id_num_plot<-ggplot(feow_sf_crop_2) + geom_sf(data= feow_sf_crop_2, fill = "#eeeeee")+
+                    borders(database="lakes", fill="black", colour="black")+
+                    borders(database=provinces, linetype="dashed")+
+                    borders(database="world", regions="canada", colour="#767676")+
+                    geom_sf_label(data= feow_sf_crop_2, aes(label = FEOW_ID), colour="black", fill="white")+
+                    xlim(-170, -50) + ylim(40, 85)+ 
+                    theme(axis.line=element_blank(),axis.text.x=element_blank(),
+                    axis.text.y=element_blank(),axis.ticks=element_blank(),
+                    axis.title.x=element_blank(),
+                    axis.title.y=element_blank(),
+                    panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+                    panel.grid.minor=element_blank(),plot.background=element_blank())
+
+region_id_num_plot
+all_score_plot_id<-region_id_num_plot + all_score_plot + plot_layout(ncol=1, heights=c(2,1)) 
+all_score_plot_id
+ggsave(all_score_plot_id, file="Plots/all_score_plot_id.png", dpi=600)
