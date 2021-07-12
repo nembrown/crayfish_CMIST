@@ -21,7 +21,7 @@ library(raster)
 library(spData)
 library(tmap)    # for static and interactive maps
 library(leaflet) # for interactive maps
-library(mapview) # for interactive maps
+library(maphead) # for interactive maps
 library(shiny)
 library(rgdal) # spatial/shp reading
 library(viridis) # nice color palette
@@ -396,8 +396,6 @@ ggplot(score_allegheny, aes(y=CMIST_Score, x=rownames(score_allegheny))) +
 theme_set(theme_bw())
 
 #### combining
-brewerset3<-c("Allegheny"="#8DD3C7", "Marble" = "#FFFF02" , "Red Swamp"="#BEBADA", "Rusty"= "#FB8072" ,"Signal"= "#80B1D3", 
-              "Virile"= "#FDB462" ,"Spiny-cheek" ="#B3DE69", "White River"= "#FCCDE5")
 
 scores_combined<-rbind(score_marble_id, score_redswamp_id, score_whiteriver_id, score_rusty_id, 
                        score_spinycheek_id, score_allegheny_id, score_virile_id, score_signal_id)
@@ -408,15 +406,35 @@ species.region.expand<-expand.grid(region=unique(score_spinycheek_id$region),
 
 scores_combined<-merge(scores_combined, species.region.expand, all=T)
 head(scores_combined)
+library(plyr)
+scores_combined$species<-revalue (scores_combined$species, c("Spiny-cheek" = "spiny-cheek", "Rusty" ="rusty", 
+                                                                  "Allegheny"="allegheny", 
+                                                                  "Virile"="virile", "Signal"="signal",
+                                                    "White River"="white river","Red Swamp"="red swamp", "Marble"="marbled"))
+scores_combined$species<-factor(scores_combined$species, levels=c( "spiny-cheek", "rusty", "allegheny", "virile", "signal",
+  "white river","red swamp", "marbled"))
 
-scores_combined$species<-factor(scores_combined$species, levels=c("Rusty" ,"Signal", "Virile","Red Swamp",
-           "Spiny-cheek", "White River", "Allegheny",  "Marble"))
+brewerset3<-c("allegheny"="#8DD3C7", "marbled" = "#FFFF02" , "red swamp"="#BEBADA", "rusty"= "#FB8072" ,"signal"= "#80B1D3", 
+              "virile"= "#FDB462" ,"spiny-cheek" ="#B3DE69", "white river"= "#FCCDE5")
+
+
+levels(scores_combined$species)
 
 scores_combined$region<-factor(scores_combined$region, levels=c(
-                                "101", "102", "104", "105", "106", "110", "111", "112", "113", 
-                                "103", "120", "107", "108", "142", 
-                                "109", "116", "117", 
-                                "114", "115", "118", "119"))
+                                "101", "102", "103", "104", "105", "106", "107", "108", "109", 
+                                "110", "111", "112", "113", "114", 
+                                "115", "116", "117", 
+                                "118", "119", "120", "142"))
+
+scores_combined$region_named<-scores_combined$region
+levels(scores_combined$region_named)<-c(
+ "101"= "101 Alaskan Coastal","102"= "102 Upper Yukon","103"= "103 Pacific Coastal", "104"= "104 Upper Mackenzie", 
+ "105"= "105 Lower Mackenzie","106"= "106 Arctic Coastal","107"= "107 Upper Saskatchewan","108"= "108 Middle Saskatchewan", 
+ "109"= "109 Winnipeg Lakes","110"= "110 Southern Hudson Bay","111"= "111 Western Hudson Bay","112"= "112 Arctic Archepelago", 
+"113"=  "113 Eastern Hudson Bay","114"= "114 Gulf of St. Lawrence", 
+"115"=  "115 Atlantic Islands","116"= "116 Great Lakes","117"= "117 St. Lawrence", 
+"118"=  "118 Atlantic Drainages","119"= "119 Scotia Fundy", 
+"120"=  "120 Columbia Glaciate","142"= "142 Upper Missouri")
 
 scores_combined$pattern.decision<-"NA"
 
@@ -428,9 +446,12 @@ for (i in 1:length(scores_combined$CMIST_Score)) {
   }
   }
 
+##3Part of figure 1
 all_score_plot<-ggplot(scores_combined, aes(y=CMIST_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
-  geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)
+  geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)+
+  xlab("Ecoregion")+ylab("Adjusted CMIST score")+ scale_y_continuous(limits = c(1, 9), breaks = c(1,3,5,7,9))
+
 all_score_plot
 
 ggsave(all_score_plot, file="Plots/all_score_plot.png", dpi=600)
@@ -448,6 +469,22 @@ all_impact_plot<-ggplot(scores_combined, aes(y=Impact_Score, x=region, colour=sp
   geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)
 ggsave(all_impact_plot, file="Plots/all_impact_plot.png", dpi=600)
 all_impact_plot
+
+#### new table
+head(scores_combined)
+scores_combined_max<-scores_combined %>% group_by(region) %>% top_n(1, CMIST_Score) 
+head(scores_combined_max)
+
+scores_combined_max_species<-scores_combined %>% group_by(species) %>% top_n(1, CMIST_Score) 
+head(scores_combined_max_species)
+
+scores_combined$confsize<-scores_combined$CMIST_Upper-scores_combined$CMIST_Lower
+head(scores_combined)
+scores_combined_conf_mean<-scores_combined %>% group_by(species) %>%  summarise_if(is.numeric, mean, na.rm=TRUE) 
+head(scores_combined_conf_mean)
+
+scores_combined_conf_mean_reg<-scores_combined %>% group_by(region) %>%  summarise_if(is.numeric, mean, na.rm=TRUE) 
+head(scores_combined_conf_mean_reg)
 
 ##### calculations for numbers in text
 max(na.omit(scores_combined$CMIST_Score))
@@ -534,6 +571,7 @@ feow_sf_crop_2<-merge(feow_sf_crop_2, scores_combined[,c("species", "region", "C
 na.value.forplot <- 'grey'
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 sc <- scale_fill_gradientn(colours = myPalette(100), limits=c(min(na.omit(feow_sf_crop_2$CMIST_Score)), max(na.omit(feow_sf_crop_2$CMIST_Score))), na.value='grey')
+sc_1_9 <- scale_fill_gradientn(colours = myPalette(100), limits=c(1, 9), na.value='grey', guide="colourbar", breaks=c(1,3,5,7,9))
 
 species_names = unique(feow_sf_crop_2$species)
 species_plots = list()
@@ -545,7 +583,7 @@ provinces <- getData(country="Canada", level=1)
 # Loop for plotting map coloured by CMIST_Score in each region 
 for(species_ in species_names) {
   species_plots[[species_]] = ggplot(feow_sf_crop_2 %>% filter(species == species_)) + 
-                              geom_sf(aes(fill = CMIST_Score, color='NA'))+ sc+
+                              geom_sf(aes(fill = CMIST_Score, color='NA'))+ sc_1_9+
                               scale_color_manual(values = 'grey', labels = 'Native range', name=NULL) +
                               guides(color = guide_legend(override.aes = list(fill = na.value.forplot)))+
                               borders(database="lakes", fill="black", colour="black")+
@@ -559,60 +597,65 @@ for(species_ in species_names) {
                                     panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
                                     panel.grid.minor=element_blank(),plot.background=element_blank())
     # print(species_plots[[species_]])
-    # ggsave(species_plots[[species_]], file=paste0("Plots/plot_", species_,".png"), dpi=300)
+     ggsave(species_plots[[species_]], file=paste0("Plots/plot_", species_,".png"), dpi=300)
                           }
 
 # check to see if it worked with virile
-species_plots[["virile"]]
+species_plots[["Virile"]]
+species_plots<-species_plots[c( "spiny-cheek", "rusty" , "allegheny", "virile", "signal",
+                                 "white river","red swamp", "marbled")]
 
-
+###This is figure 2
 allspp_plot <-  wrap_plots( species_plots, ncol = 2) + plot_layout(guides = 'collect') 
-allspp_plot
-ggsave(allspp_plot, file="Plots/allspp_plot.pdf", dpi=600)
+#allspp_plot
+ggsave(allspp_plot, file="Plots/fig.2.png", dpi=600)
 
-allspp_plot_map <-  wrap_plots( species_plots, ncol = 4) + plot_layout(guides = 'collect') 
-allspp_plot_map
-
-allspp_plot_map_combined <-  (all_score_plot / allspp_plot_map) + plot_layout(guides = 'collect')+ plot_annotation(tag_levels = 'a')
-allspp_plot_map_combined
-ggsave(allspp_plot_map_combined, file="Plots/allspp_plot_map_combined.png", dpi=600)
+# allspp_plot_map <-  wrap_plots( species_plots, ncol = 4) + plot_layout(guides = 'collect') 
+# allspp_plot_map
+# 
+# allspp_plot_map_combined <-  (all_score_plot / allspp_plot_map) + plot_layout(guides = 'collect')+ plot_annotation(tag_levels = 'a')
+# allspp_plot_map_combined
+# ggsave(allspp_plot_map_combined, file="Plots/allspp_plot_map_combined.png", dpi=600)
 
 
 # Biplots for likelihood and invasion  -----------------------------------------------------------------
 
-View(scores_combined)
+head(scores_combined)
 #JITTER ERROR AND GEOM POINT
+#size 6 works ... see if can be auto
 
 regions = unique(scores_combined$region)
 region_plots = list()
 
 for(region_ in regions) {
   region_plots[[region_]] = ggplot(scores_combined %>% filter(region == region_), aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
+    ggtitle(scores_combined$region_named[scores_combined$region == region_])+
+    theme(plot.title = element_text(size=8))+
     geom_rect(data=NULL,aes(xmin=2,xmax=3,ymin=2,ymax=3), colour="black", fill = NA, linetype="dashed")+
     geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), size=1, position=position_dodge(width=0.1)) +
     geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper), size=1) +
     geom_point(size=3,position=position_dodge(width=0.1) )+
     ylim(1,3.1)+xlim(1,3.1)+
-    ggtitle(paste0(region_)) +
     scale_color_manual(values=brewerset3, drop=FALSE, limits=species_names)+
     coord_equal()
   # print(region_plots[[region_]])
-   ggsave(region_plots[[region_]], file=paste0("Plots/plot_", region_,".png"), dpi=300)
+  # ggsave(region_plots[[region_]], file=paste0("Plots/plot_", region_,".png"), dpi=300)
 }
 
 # check region with 116
-region_plots[["115"]]
+region_plots[["116"]]
 
+#This is figure 3
 allregions_plot <-  wrap_plots( region_plots, ncol = 7) + plot_layout(guides = 'collect') 
-allregions_plot
-ggsave(allregions_plot, file="Plots/allregions_biplot.png", width=15, height=12, units="in", dpi=600)
+#allregions_plot
+ggsave(allregions_plot, file="Plots/fig3.png",  dpi=600)
 
  
  
  ###### Maps for region ID number
 
 
-
+### This is figure 1
 region_id_num_plot<-ggplot(feow_sf_crop_2) + geom_sf(data= feow_sf_crop_2, fill = "#eeeeee")+
                     borders(database="lakes", fill="black", colour="black")+
                     borders(database=provinces, linetype="dashed")+
@@ -626,7 +669,7 @@ region_id_num_plot<-ggplot(feow_sf_crop_2) + geom_sf(data= feow_sf_crop_2, fill 
                     panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
                     panel.grid.minor=element_blank(),plot.background=element_blank())
 
-region_id_num_plot
+# region_id_num_plot
 all_score_plot_id<-region_id_num_plot + all_score_plot + plot_layout(ncol=1, heights=c(2,1)) 
-all_score_plot_id
-ggsave(all_score_plot_id, file="Plots/all_score_plot_id.png", dpi=600)
+# all_score_plot_id
+ggsave(all_score_plot_id, file="Plots/fig.1.png", dpi=600)

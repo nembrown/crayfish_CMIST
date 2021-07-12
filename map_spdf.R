@@ -1,4 +1,4 @@
-Un-used code: working with shapefile in R and ggplot, would be easier to use sf. 
+#Un-used code: working with shapefile in R and ggplot, would be easier to use sf. 
 
 
 #Some resources:
