@@ -39,8 +39,8 @@ library(ggsflabel)
 # devtools::install_github("https://github.com/remi-daigle/CMISTR")
 
 set.seed(11)
-risks <- sample(x = c(1:3),size = 17,replace = TRUE)
-uncertainties <- sample(x = c(1:3),size = 17,replace = TRUE)
+risks <- c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2)
+uncertainties <-  c(3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3)
 
 score <- CMISTScore(risks,uncertainties)
 score
@@ -408,13 +408,13 @@ scores_combined<-merge(scores_combined, species.region.expand, all=T)
 head(scores_combined)
 library(plyr)
 scores_combined$species<-revalue (scores_combined$species, c("Spiny-cheek" = "spiny-cheek", "Rusty" ="rusty", 
-                                                                  "Allegheny"="allegheny", 
+                                                                  "Allegheny"="Allegheny", 
                                                                   "Virile"="virile", "Signal"="signal",
                                                     "White River"="white river","Red Swamp"="red swamp", "Marble"="marbled"))
-scores_combined$species<-factor(scores_combined$species, levels=c( "spiny-cheek", "rusty", "allegheny", "virile", "signal",
+scores_combined$species<-ordered(scores_combined$species, levels=c( "spiny-cheek", "rusty", "Allegheny", "virile", "signal",
   "white river","red swamp", "marbled"))
 
-brewerset3<-c("allegheny"="#8DD3C7", "marbled" = "#FFFF02" , "red swamp"="#BEBADA", "rusty"= "#FB8072" ,"signal"= "#80B1D3", 
+brewerset3<-c("Allegheny"="#8DD3C7", "marbled" = "#FFFF02" , "red swamp"="#BEBADA", "rusty"= "#FB8072" ,"signal"= "#80B1D3", 
               "virile"= "#FDB462" ,"spiny-cheek" ="#B3DE69", "white river"= "#FCCDE5")
 
 
@@ -428,13 +428,13 @@ scores_combined$region<-factor(scores_combined$region, levels=c(
 
 scores_combined$region_named<-scores_combined$region
 levels(scores_combined$region_named)<-c(
- "101"= "101 Alaskan Coastal","102"= "102 Upper Yukon","103"= "103 Pacific Coastal", "104"= "104 Upper Mackenzie", 
- "105"= "105 Lower Mackenzie","106"= "106 Arctic Coastal","107"= "107 Upper Saskatchewan","108"= "108 Middle Saskatchewan", 
- "109"= "109 Winnipeg Lakes","110"= "110 Southern Hudson Bay","111"= "111 Western Hudson Bay","112"= "112 Arctic Archepelago", 
-"113"=  "113 Eastern Hudson Bay","114"= "114 Gulf of St. Lawrence", 
-"115"=  "115 Atlantic Islands","116"= "116 Great Lakes","117"= "117 St. Lawrence", 
-"118"=  "118 Atlantic Drainages","119"= "119 Scotia Fundy", 
-"120"=  "120 Columbia Glaciate","142"= "142 Upper Missouri")
+ "101"= "101 Alaskan \nCoastal","102"= "102 Upper Yukon","103"= "103 Pacific \nCoastal", "104"= "104 Upper \nMackenzie", 
+ "105"= "105 Lower \nMackenzie","106"= "106 Arctic \nCoastal","107"= "107 Upper \nSaskatchewan","108"= "108 Middle \nSaskatchewan", 
+ "109"= "109 Winnipeg \nLakes","110"= "110 Southern \nHudson Bay","111"= "111 Western \nHudson Bay","112"= "112 Arctic \nArchepelago", 
+"113"=  "113 Eastern \nHudson Bay","114"= "114 Gulf of \nSt. Lawrence", 
+"115"=  "115 Atlantic \nIslands","116"= "116 Great Lakes","117"= "117 St. Lawrence", 
+"118"=  "118 Atlantic \nDrainages","119"= "119 Scotia Fundy", 
+"120"=  "120 Columbia \nGlaciate","142"= "142 Upper \nMissouri")
 
 scores_combined$pattern.decision<-"NA"
 
@@ -449,8 +449,9 @@ for (i in 1:length(scores_combined$CMIST_Score)) {
 ##3Part of figure 1
 all_score_plot<-ggplot(scores_combined, aes(y=CMIST_Score, x=region, colour=species)) + 
   geom_errorbar(aes(ymin=CMIST_Lower, ymax=CMIST_Upper), width=.1, position=position_dodge(width=0.5)) +
-  geom_point(size=4, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)+
-  xlab("Ecoregion")+ylab("Adjusted CMIST score")+ scale_y_continuous(limits = c(1, 9), breaks = c(1,3,5,7,9))
+  geom_point(size=3, position=position_dodge(width=0.5))+scale_colour_manual(values=brewerset3)+
+  xlab("Ecoregion")+ylab("Adjusted CMIST score")+ scale_y_continuous(limits = c(1, 9), breaks = c(1,3,5,7,9))+
+  theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 
 all_score_plot
 
@@ -482,10 +483,10 @@ scores_combined$confsize<-scores_combined$CMIST_Upper-scores_combined$CMIST_Lowe
 head(scores_combined)
 scores_combined_conf_mean<-scores_combined %>% group_by(species) %>%  summarise_if(is.numeric, mean, na.rm=TRUE) 
 head(scores_combined_conf_mean)
-
+View(scores_combined_conf_mean)
 scores_combined_conf_mean_reg<-scores_combined %>% group_by(region) %>%  summarise_if(is.numeric, mean, na.rm=TRUE) 
 head(scores_combined_conf_mean_reg)
-
+View(scores_combined_conf_mean_reg)
 ##### calculations for numbers in text
 max(na.omit(scores_combined$CMIST_Score))
 scores_combined$CMIST_Lower[scores_combined$CMIST_Score==max(na.omit(scores_combined$CMIST_Score))]
@@ -494,7 +495,7 @@ min(na.omit(scores_combined$CMIST_Score))
 scores_combined$CMIST_Lower[scores_combined$CMIST_Score==min(na.omit(scores_combined$CMIST_Score))]
 scores_combined$CMIST_Upper[scores_combined$CMIST_Score==min(na.omit(scores_combined$CMIST_Score))]
 
-
+View(scores_combined)
 max(na.omit(scores_combined$Likelihood_Score))
 scores_combined$Likelihood_Lower[scores_combined$Likelihood_Score==max(na.omit(scores_combined$Likelihood_Score))]
 scores_combined$Likelihood_Upper[scores_combined$Likelihood_Score==max(na.omit(scores_combined$Likelihood_Score))]
@@ -573,7 +574,7 @@ myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 sc <- scale_fill_gradientn(colours = myPalette(100), limits=c(min(na.omit(feow_sf_crop_2$CMIST_Score)), max(na.omit(feow_sf_crop_2$CMIST_Score))), na.value='grey')
 sc_1_9 <- scale_fill_gradientn(colours = myPalette(100), limits=c(1, 9), na.value='grey', guide="colourbar", breaks=c(1,3,5,7,9))
 
-species_names = unique(feow_sf_crop_2$species)
+species_names = levels( scores_combined$species)
 species_plots = list()
 pattern.list<-c("yes"="grey", "no"="none")
 
@@ -595,20 +596,22 @@ for(species_ in species_names) {
                                     axis.title.x=element_blank(),
                                     axis.title.y=element_blank(),
                                     panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-                                    panel.grid.minor=element_blank(),plot.background=element_blank())
+                                    panel.grid.minor=element_blank(),plot.background=element_blank())+
+                              theme(plot.margin = margin(0, 0, 0, 0, "cm"))
+  
     # print(species_plots[[species_]])
      ggsave(species_plots[[species_]], file=paste0("Plots/plot_", species_,".png"), dpi=300)
                           }
 
 # check to see if it worked with virile
 species_plots[["Virile"]]
-species_plots<-species_plots[c( "spiny-cheek", "rusty" , "allegheny", "virile", "signal",
-                                 "white river","red swamp", "marbled")]
+#species_plots<-species_plots[c( "spiny-cheek", "rusty" , "Allegheny", "virile", "signal",
+                         #        "white river","red swamp", "marbled")]
 
 ###This is figure 2
 allspp_plot <-  wrap_plots( species_plots, ncol = 2) + plot_layout(guides = 'collect') 
-#allspp_plot
-ggsave(allspp_plot, file="Plots/fig.2.png", dpi=600)
+allspp_plot
+ggsave(allspp_plot, file="Plots/fig.2.tiff", unit="cm",width=18.2,height=23.7, dpi=600)
 
 # allspp_plot_map <-  wrap_plots( species_plots, ncol = 4) + plot_layout(guides = 'collect') 
 # allspp_plot_map
@@ -623,14 +626,15 @@ ggsave(allspp_plot, file="Plots/fig.2.png", dpi=600)
 head(scores_combined)
 #JITTER ERROR AND GEOM POINT
 #size 6 works ... see if can be auto
-
+levels(scores_combined$species)
 regions = unique(scores_combined$region)
 region_plots = list()
 
 for(region_ in regions) {
   region_plots[[region_]] = ggplot(scores_combined %>% filter(region == region_), aes(y=Likelihood_Score, x=Impact_Score, colour=species)) + 
     ggtitle(scores_combined$region_named[scores_combined$region == region_])+
-    theme(plot.title = element_text(size=8))+
+    xlab("Impact of Invasion") + theme(axis.title = element_text(size = 10)) + ylab("Likelihood of Invasion")+
+    theme(plot.title = element_text(size=10))+
     geom_rect(data=NULL,aes(xmin=2,xmax=3,ymin=2,ymax=3), colour="black", fill = NA, linetype="dashed")+
     geom_errorbar(aes(ymin=Likelihood_Lower, ymax=Likelihood_Upper), size=1, position=position_dodge(width=0.1)) +
     geom_errorbarh(aes(xmin=Impact_Lower, xmax=Impact_Upper), size=1) +
@@ -647,8 +651,8 @@ region_plots[["116"]]
 
 #This is figure 3
 allregions_plot <-  wrap_plots( region_plots, ncol = 7) + plot_layout(guides = 'collect') 
-#allregions_plot
-ggsave(allregions_plot, file="Plots/fig3.png",  dpi=600)
+allregions_plot
+ggsave(allregions_plot, file="Plots/fig3.tiff", unit="cm",width=18.2,height=23.7, dpi=600)
 
  
  
@@ -667,9 +671,38 @@ region_id_num_plot<-ggplot(feow_sf_crop_2) + geom_sf(data= feow_sf_crop_2, fill 
                     axis.title.x=element_blank(),
                     axis.title.y=element_blank(),
                     panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
-                    panel.grid.minor=element_blank(),plot.background=element_blank())
+                    panel.grid.minor=element_blank(),plot.background=element_blank())+
+                    theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 
 # region_id_num_plot
 all_score_plot_id<-region_id_num_plot + all_score_plot + plot_layout(ncol=1, heights=c(2,1)) 
 # all_score_plot_id
-ggsave(all_score_plot_id, file="Plots/fig.1.png", dpi=600)
+ggsave(all_score_plot_id, file="Plots/fig.1.tiff", unit="cm",width=18.2,height=10, dpi=600)
+
+
+##### add in native crayfish in Canada map
+head(feow_sf_crop_3)
+native.crayfish.df<-read.csv("C:Inputs//native_crayfish.csv")
+feow_sf_crop_3<-merge(feow_sf_crop_2, native.crayfish.df)
+feow_sf_crop_3<-feow_sf_crop_3 %>% filter(species=="marbled")
+feow_sf_crop_3$native_crayfish<-as.factor(feow_sf_crop_3$native_crayfish)
+
+sc_0_8 <- scale_fill_gradientn(colours = myPalettered(100), limits=c(0, 8), na.value='grey', guide="colourbar")
+myPalettered <- colorRampPalette(rev(brewer.pal(9, "Reds", direction=-1,)))
+redpal<-scale_fill_brewer(palette="Reds")
+
+region_native_plot<-ggplot(feow_sf_crop_3) + geom_sf(aes(fill = native_crayfish))+ 
+                    redpal+
+                    borders(database="lakes", fill="black", colour="black")+
+                    borders(database=provinces, linetype="dashed")+
+                    borders(database="world", regions="canada", colour="#767676")+
+                    xlim(-170, -50) + ylim(40, 85)+ 
+                    theme(axis.line=element_blank(),axis.text.x=element_blank(),
+                          axis.text.y=element_blank(),axis.ticks=element_blank(),
+                          axis.title.x=element_blank(),
+                          axis.title.y=element_blank(),
+                          panel.background=element_blank(),panel.border=element_blank(),panel.grid.major=element_blank(),
+                          panel.grid.minor=element_blank(),plot.background=element_blank())+
+                    theme(plot.margin = margin(0, 0, 0, 0, "cm"))
+  
+region_native_plot
