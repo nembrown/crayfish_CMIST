@@ -17,4 +17,4 @@
 *.tiff
 *.png
 *.tif
-Plots/
+Plots/*.*
