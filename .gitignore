@@ -14,3 +14,7 @@
 *.png
 *.rds
 *.pdf
+*.tiff
+*.png
+*.tif
+Plots/
